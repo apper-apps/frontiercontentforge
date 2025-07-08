@@ -1,7 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import documentService from '@/services/api/documentService';
 import DocumentList from '@/components/organisms/DocumentList';
 import ApperIcon from '@/components/ApperIcon';
+
+const DocumentStats = () => {
+  const [stats, setStats] = useState({
+    total: 0,
+    inReview: 0,
+    completed: 0,
+    seoOptimized: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const documents = await documentService.getAll();
+      const total = documents.length;
+      const inReview = documents.filter(doc => doc.status === 'Ready to Review').length;
+      const completed = documents.filter(doc => doc.status === 'Completed').length;
+      const seoOptimized = documents.filter(doc => doc.neuronwriterUrl).length;
+      
+      setStats({ total, inReview, completed, seoOptimized });
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+              <div>
+                <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-12"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
+            <ApperIcon name="FileText" size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Total Documents</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+            <ApperIcon name="Clock" size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">In Review</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.inReview}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-success to-green-600 rounded-lg flex items-center justify-center">
+            <ApperIcon name="CheckCircle" size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Completed</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-secondary to-purple-600 rounded-lg flex items-center justify-center">
+            <ApperIcon name="BarChart3" size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">SEO Optimized</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.seoOptimized}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MyDocuments = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -54,53 +155,7 @@ const MyDocuments = () => {
         transition={{ delay: 0.3 }}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
       >
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-              <ApperIcon name="FileText" size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Documents</p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-              <ApperIcon name="Clock" size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">In Review</p>
-              <p className="text-2xl font-bold text-gray-900">3</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-success to-green-600 rounded-lg flex items-center justify-center">
-              <ApperIcon name="CheckCircle" size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">8</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-secondary to-purple-600 rounded-lg flex items-center justify-center">
-              <ApperIcon name="BarChart3" size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">SEO Optimized</p>
-              <p className="text-2xl font-bold text-gray-900">5</p>
-            </div>
-          </div>
-        </div>
+<DocumentStats />
       </motion.div>
 
       {/* Document List */}

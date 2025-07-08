@@ -1,12 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
+import { useContext } from 'react';
+import { AuthContext } from '@/App';
 import TabNavigation from '@/components/molecules/TabNavigation';
 import ApperIcon from '@/components/ApperIcon';
 import Button from '@/components/atoms/Button';
-import { useAuth } from '@/contexts/AuthContext';
 
 const Layout = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { logout } = useContext(AuthContext);
+  const { user } = useSelector((state) => state.user);
 
   const tabs = [
     { path: '/generate', label: 'Generate Content', icon: 'Sparkles' },
@@ -46,11 +49,11 @@ const Layout = ({ children }) => {
                 <span>Systems Online</span>
               </div>
               
-              {user && (
+{user && (
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</p>
+                    <p className="text-xs text-gray-500">{user.emailAddress}</p>
                   </div>
                   <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
                     <ApperIcon name="User" size={16} className="text-white" />

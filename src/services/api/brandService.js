@@ -1,221 +1,196 @@
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
-
 class BrandService {
   constructor() {
-    this.baseUrl = '/api/brands';
+    this.tableName = 'brand';
   }
 
   async getAll() {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
     try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      return brands;
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "apiKey" } },
+          { field: { Name: "projectId" } },
+          { field: { Name: "createdAt" } }
+        ]
+      };
+      
+      const response = await apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      return response.data || [];
     } catch (error) {
+      console.error("Error fetching brands:", error);
       throw new Error('Failed to load brands');
     }
   }
 
   async getById(id) {
-    await new Promise(resolve => setTimeout(resolve, 150));
-    
     try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const brand = brands.find(brand => brand.Id === parseInt(id));
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      if (!brand) {
-        throw new Error('Brand not found');
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "apiKey" } },
+          { field: { Name: "projectId" } },
+          { field: { Name: "createdAt" } }
+        ]
+      };
+      
+      const response = await apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
       }
       
-      return brand;
+      return response.data;
     } catch (error) {
+      console.error("Error fetching brand:", error);
       throw new Error('Failed to load brand');
     }
   }
 
-async create(brandData) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
+  async create(brandData) {
     try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const maxId = brands.length > 0 ? Math.max(...brands.map(brand => brand.Id)) : 0;
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      const newBrand = {
-        Id: maxId + 1,
-        ...brandData,
-        locations: brandData.locations || [],
-        createdAt: new Date().toISOString()
+      // Only include updateable fields
+      const params = {
+        records: [{
+          Name: brandData.name,
+          Tags: brandData.tags || "",
+          Owner: brandData.owner || null,
+          apiKey: brandData.apiKey || "",
+          projectId: brandData.projectId || "",
+          createdAt: new Date().toISOString()
+        }]
       };
       
-      brands.push(newBrand);
-      localStorage.setItem('brands', JSON.stringify(brands));
+      const response = await apperClient.createRecord(this.tableName, params);
       
-      return newBrand;
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || 'Failed to create brand');
+        }
+        
+        return response.results[0].data;
+      }
+      
+      return response.data;
     } catch (error) {
+      console.error("Error creating brand:", error);
       throw new Error('Failed to create brand');
     }
   }
 
   async update(id, updateData) {
-    await new Promise(resolve => setTimeout(resolve, 250));
-    
     try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const index = brands.findIndex(brand => brand.Id === parseInt(id));
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      if (index === -1) {
-        throw new Error('Brand not found');
-      }
-      
-      brands[index] = {
-        ...brands[index],
-        ...updateData,
-        updatedAt: new Date().toISOString()
+      // Only include updateable fields
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          Name: updateData.name,
+          Tags: updateData.tags || "",
+          Owner: updateData.owner || null,
+          apiKey: updateData.apiKey || "",
+          projectId: updateData.projectId || ""
+        }]
       };
       
-      localStorage.setItem('brands', JSON.stringify(brands));
+      const response = await apperClient.updateRecord(this.tableName, params);
       
-      return brands[index];
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to update ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || 'Failed to update brand');
+        }
+        
+        return response.results[0].data;
+      }
+      
+      return response.data;
     } catch (error) {
+      console.error("Error updating brand:", error);
       throw new Error('Failed to update brand');
     }
   }
 
   async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
     try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const filteredBrands = brands.filter(brand => brand.Id !== parseInt(id));
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      localStorage.setItem('brands', JSON.stringify(filteredBrands));
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+      
+      const response = await apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to delete ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || 'Failed to delete brand');
+        }
+      }
       
       return true;
     } catch (error) {
+      console.error("Error deleting brand:", error);
       throw new Error('Failed to delete brand');
-}
-  }
-
-  // Location management methods
-  async getLocationsByBrandId(brandId) {
-    await new Promise(resolve => setTimeout(resolve, 150));
-    
-    try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const brand = brands.find(brand => brand.Id === parseInt(brandId));
-      
-      if (!brand) {
-        throw new Error('Brand not found');
-      }
-      
-      return brand.locations || [];
-    } catch (error) {
-      throw new Error('Failed to load locations');
-    }
-  }
-
-  async createLocation(brandId, locationData) {
-    await new Promise(resolve => setTimeout(resolve, 250));
-    
-    try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const brandIndex = brands.findIndex(brand => brand.Id === parseInt(brandId));
-      
-      if (brandIndex === -1) {
-        throw new Error('Brand not found');
-      }
-      
-      if (!brands[brandIndex].locations) {
-        brands[brandIndex].locations = [];
-      }
-      
-      const maxId = brands[brandIndex].locations.length > 0 
-        ? Math.max(...brands[brandIndex].locations.map(loc => loc.Id)) 
-        : 0;
-      
-      const newLocation = {
-        Id: maxId + 1,
-        ...locationData,
-        brandId: parseInt(brandId),
-        createdAt: new Date().toISOString()
-      };
-      
-      brands[brandIndex].locations.push(newLocation);
-      brands[brandIndex].updatedAt = new Date().toISOString();
-      
-      localStorage.setItem('brands', JSON.stringify(brands));
-      
-      return newLocation;
-    } catch (error) {
-      throw new Error('Failed to create location');
-    }
-  }
-
-  async updateLocation(brandId, locationId, updateData) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const brandIndex = brands.findIndex(brand => brand.Id === parseInt(brandId));
-      
-      if (brandIndex === -1) {
-        throw new Error('Brand not found');
-      }
-      
-      if (!brands[brandIndex].locations) {
-        throw new Error('No locations found for this brand');
-      }
-      
-      const locationIndex = brands[brandIndex].locations.findIndex(
-        loc => loc.Id === parseInt(locationId)
-      );
-      
-      if (locationIndex === -1) {
-        throw new Error('Location not found');
-      }
-      
-      brands[brandIndex].locations[locationIndex] = {
-        ...brands[brandIndex].locations[locationIndex],
-        ...updateData,
-        updatedAt: new Date().toISOString()
-      };
-      
-      brands[brandIndex].updatedAt = new Date().toISOString();
-      
-      localStorage.setItem('brands', JSON.stringify(brands));
-      
-      return brands[brandIndex].locations[locationIndex];
-    } catch (error) {
-      throw new Error('Failed to update location');
-    }
-  }
-
-  async deleteLocation(brandId, locationId) {
-    await new Promise(resolve => setTimeout(resolve, 150));
-    
-    try {
-      const brands = JSON.parse(localStorage.getItem('brands') || '[]');
-      const brandIndex = brands.findIndex(brand => brand.Id === parseInt(brandId));
-      
-      if (brandIndex === -1) {
-        throw new Error('Brand not found');
-      }
-      
-      if (!brands[brandIndex].locations) {
-        throw new Error('No locations found for this brand');
-      }
-      
-      brands[brandIndex].locations = brands[brandIndex].locations.filter(
-        loc => loc.Id !== parseInt(locationId)
-      );
-      
-      brands[brandIndex].updatedAt = new Date().toISOString();
-      
-      localStorage.setItem('brands', JSON.stringify(brands));
-      
-      return true;
-    } catch (error) {
-      throw new Error('Failed to delete location');
     }
   }
 }

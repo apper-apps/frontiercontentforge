@@ -1,106 +1,238 @@
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
-
 class DocumentService {
   constructor() {
-    this.baseUrl = '/api/documents';
+    this.tableName = 'document';
   }
 
   async getAll() {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
     try {
-      const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-      return documents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+      
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "title" } },
+          { field: { Name: "content" } },
+          { field: { Name: "contentType" } },
+          { field: { Name: "keywords" } },
+          { field: { Name: "status" } },
+          { field: { Name: "googleDocUrl" } },
+          { field: { Name: "neuronwriterUrl" } },
+          { field: { Name: "analysisId" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "userId" } }
+        ],
+        orderBy: [
+          {
+            fieldName: "createdAt",
+            sorttype: "DESC"
+          }
+        ]
+      };
+      
+      const response = await apperClient.fetchRecords(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      return response.data || [];
     } catch (error) {
+      console.error("Error fetching documents:", error);
       throw new Error('Failed to load documents');
     }
   }
 
   async getById(id) {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
     try {
-      const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-      const document = documents.find(doc => doc.Id === parseInt(id));
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      if (!document) {
-        throw new Error('Document not found');
+      const params = {
+        fields: [
+          { field: { Name: "Name" } },
+          { field: { Name: "Tags" } },
+          { field: { Name: "Owner" } },
+          { field: { Name: "title" } },
+          { field: { Name: "content" } },
+          { field: { Name: "contentType" } },
+          { field: { Name: "keywords" } },
+          { field: { Name: "status" } },
+          { field: { Name: "googleDocUrl" } },
+          { field: { Name: "neuronwriterUrl" } },
+          { field: { Name: "analysisId" } },
+          { field: { Name: "createdAt" } },
+          { field: { Name: "updatedAt" } },
+          { field: { Name: "userId" } }
+        ]
+      };
+      
+      const response = await apperClient.getRecordById(this.tableName, parseInt(id), params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
       }
       
-      return document;
+      return response.data;
     } catch (error) {
+      console.error("Error fetching document:", error);
       throw new Error('Failed to load document');
     }
   }
 
   async create(documentData) {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
     try {
-      const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-      const maxId = documents.length > 0 ? Math.max(...documents.map(doc => doc.Id)) : 0;
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      const newDocument = {
-        Id: maxId + 1,
-        ...documentData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        userId: 'current-user-id'
+      // Only include updateable fields
+      const params = {
+        records: [{
+          Name: documentData.title,
+          Tags: documentData.tags || "",
+          Owner: documentData.owner || null,
+          title: documentData.title,
+          content: documentData.content || "",
+          contentType: documentData.contentType || "",
+          keywords: documentData.keywords || "",
+          status: documentData.status || "Draft",
+          googleDocUrl: documentData.googleDocUrl || "",
+          neuronwriterUrl: documentData.neuronwriterUrl || "",
+          analysisId: documentData.analysisId || "",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          userId: documentData.userId || null
+        }]
       };
       
-      documents.push(newDocument);
-      localStorage.setItem('documents', JSON.stringify(documents));
+      const response = await apperClient.createRecord(this.tableName, params);
       
-      return newDocument;
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to create ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || 'Failed to create document');
+        }
+        
+        return response.results[0].data;
+      }
+      
+      return response.data;
     } catch (error) {
+      console.error("Error creating document:", error);
       throw new Error('Failed to create document');
     }
   }
 
   async update(id, updateData) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
     try {
-      const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-      const index = documents.findIndex(doc => doc.Id === parseInt(id));
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      if (index === -1) {
-        throw new Error('Document not found');
-      }
-      
-      documents[index] = {
-        ...documents[index],
-        ...updateData,
-        updatedAt: new Date().toISOString()
+      // Only include updateable fields
+      const params = {
+        records: [{
+          Id: parseInt(id),
+          Name: updateData.title || updateData.Name,
+          Tags: updateData.tags || updateData.Tags || "",
+          Owner: updateData.owner || updateData.Owner || null,
+          title: updateData.title,
+          content: updateData.content,
+          contentType: updateData.contentType,
+          keywords: updateData.keywords,
+          status: updateData.status,
+          googleDocUrl: updateData.googleDocUrl,
+          neuronwriterUrl: updateData.neuronwriterUrl,
+          analysisId: updateData.analysisId,
+          updatedAt: new Date().toISOString(),
+          userId: updateData.userId
+        }]
       };
       
-      localStorage.setItem('documents', JSON.stringify(documents));
+      const response = await apperClient.updateRecord(this.tableName, params);
       
-      return documents[index];
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to update ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || 'Failed to update document');
+        }
+        
+        return response.results[0].data;
+      }
+      
+      return response.data;
     } catch (error) {
+      console.error("Error updating document:", error);
       throw new Error('Failed to update document');
     }
   }
 
   async delete(id) {
-    await new Promise(resolve => setTimeout(resolve, 250));
-    
     try {
-      const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-      const filteredDocuments = documents.filter(doc => doc.Id !== parseInt(id));
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
       
-      localStorage.setItem('documents', JSON.stringify(filteredDocuments));
+      const params = {
+        RecordIds: [parseInt(id)]
+      };
+      
+      const response = await apperClient.deleteRecord(this.tableName, params);
+      
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+      
+      if (response.results) {
+        const failedRecords = response.results.filter(result => !result.success);
+        
+        if (failedRecords.length > 0) {
+          console.error(`Failed to delete ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
+          throw new Error(failedRecords[0].message || 'Failed to delete document');
+        }
+      }
       
       return true;
     } catch (error) {
+      console.error("Error deleting document:", error);
       throw new Error('Failed to delete document');
     }
   }
 
   async generateSocialPosts(documentId) {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
     try {
       const document = await this.getById(documentId);
       
@@ -119,6 +251,7 @@ class DocumentService {
       
       return socialPosts;
     } catch (error) {
+      console.error("Error generating social posts:", error);
       throw new Error('Failed to generate social posts');
     }
   }
