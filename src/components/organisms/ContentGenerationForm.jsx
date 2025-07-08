@@ -14,24 +14,46 @@ import aiService from "@/services/api/aiService";
 import documentService from "@/services/api/documentService";
 
 const ContentGenerationForm = ({ onDocumentCreated }) => {
-const [formData, setFormData] = useState({
-    companyName: '',
+  const [formData, setFormData] = useState({
+    brandId: '',
     keywords: '',
     contentType: '',
     location: ''
   });
-const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
   const [errors, setErrors] = useState({});
+  const [brands, setBrands] = useState([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
+  const [brandsError, setBrandsError] = useState('');
 
   const debouncedKeywords = useDebounce(formData.keywords, 300);
 
-  const validateForm = () => {
+  // Load brands on component mount
+  useEffect(() => {
+    const loadBrands = async () => {
+      setBrandsLoading(true);
+      setBrandsError('');
+      try {
+        const brandsList = await brandService.getAll();
+        setBrands(brandsList);
+      } catch (error) {
+        setBrandsError('Failed to load brands');
+        toast.error('Failed to load brands');
+      } finally {
+        setBrandsLoading(false);
+      }
+    };
+
+    loadBrands();
+  }, []);
+
+const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.companyName.trim()) {
-      newErrors.companyName = 'Company name is required';
+    if (!formData.brandId) {
+      newErrors.brandId = 'Brand selection is required';
     }
 
     if (!formData.keywords.trim()) {
@@ -40,7 +62,7 @@ const [loading, setLoading] = useState(false);
       newErrors.keywords = 'Keywords must be between 3 and 100 characters';
     }
 
-if (!formData.contentType) {
+    if (!formData.contentType) {
       newErrors.contentType = 'Content type is required';
     }
 
@@ -85,9 +107,13 @@ if (!formData.contentType) {
         'Optimize for SEO and improve readability'
       );
 
-      // Step 4: Create document
+// Step 4: Create document
       setProgress(80);
       setCurrentStep('Creating document...');
+      
+      // Get selected brand information
+      const selectedBrand = brands.find(brand => brand.Id === parseInt(formData.brandId));
+      const companyName = selectedBrand ? selectedBrand.name : '';
       
       const documentData = {
         title: `${formData.contentType}: ${formData.keywords}`,
@@ -95,8 +121,9 @@ if (!formData.contentType) {
         contentType: formData.contentType,
         keywords: formData.keywords,
         status: 'Draft',
-googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
-        companyName: formData.companyName,
+        googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
+        companyName: companyName,
+        brandId: formData.brandId,
         location: formData.location,
         metadata: {
           ...initialContent.metadata,
@@ -106,7 +133,7 @@ googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
       };
 
       // Step 5: Neuronwriter integration (if Mr. Handyman)
-      if (formData.companyName === 'Mr. Handyman') {
+      if (companyName === 'Mr. Handyman') {
         setCurrentStep('Integrating with Neuronwriter...');
         try {
           const analysis = await neuronwriterService.createAnalysis(
@@ -137,14 +164,13 @@ googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
       
 toast.success('Content generated successfully!');
       
-      // Reset form
+// Reset form
       setFormData({
-        companyName: '',
+        brandId: '',
         keywords: '',
         contentType: '',
         location: ''
       });
-      
       if (onDocumentCreated) {
         onDocumentCreated(createdDocument);
       }
@@ -159,7 +185,7 @@ toast.success('Content generated successfully!');
     }
   };
 
-  const handleInputChange = (field, value) => {
+const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -173,7 +199,6 @@ toast.success('Content generated successfully!');
       }));
     }
   };
-
   return (
     <Card className="p-6">
       <div className="mb-6">
@@ -185,16 +210,33 @@ toast.success('Content generated successfully!');
 
 <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            label="Company Name"
-            required
-            placeholder="e.g., Mr. Handyman, ABC Company"
-            value={formData.companyName}
-            onChange={(e) => handleInputChange('companyName', e.target.value)}
-            error={errors.companyName}
-            helpText="Enter your company name"
-          />
-
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Brand <span className="text-red-500">*</span>
+            </label>
+            <Select
+              value={formData.brandId}
+              onChange={(e) => handleInputChange('brandId', e.target.value)}
+              disabled={brandsLoading}
+              className={errors.brandId ? 'border-red-300' : ''}
+            >
+              <option value="">
+                {brandsLoading ? 'Loading brands...' : 'Select a brand'}
+              </option>
+              {brands.map((brand) => (
+                <option key={brand.Id} value={brand.Id}>
+                  {brand.name}
+                </option>
+              ))}
+            </Select>
+            {errors.brandId && (
+              <p className="text-sm text-red-600">{errors.brandId}</p>
+            )}
+            {brandsError && !brandsLoading && (
+              <p className="text-sm text-red-600">{brandsError}</p>
+            )}
+            <p className="text-sm text-gray-500">Select your brand from the list</p>
+          </div>
           <FormField
             label="Keywords"
             required
