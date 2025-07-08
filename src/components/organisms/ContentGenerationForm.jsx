@@ -136,12 +136,21 @@ const validateForm = () => {
 // Step 5: Neuronwriter integration
       setCurrentStep('Creating Neuronwriter query...');
       try {
-        // Create new query using the new-query API endpoint
+        // Validate brand credentials
+        if (!selectedBrand.projectId) {
+          throw new Error(`Brand "${selectedBrand.name}" is missing Project ID. Please update brand settings.`);
+        }
+        if (!selectedBrand.apiKey) {
+          throw new Error(`Brand "${selectedBrand.name}" is missing API key. Please update brand settings.`);
+        }
+        
+        // Create new query using brand-specific credentials
         const queryResult = await neuronwriterService.newQuery(
-          selectedBrand.projectId || 'default_project',
+          selectedBrand.projectId,
           formData.keywords,
           'English',
-          'google.com'
+          'google.com',
+          selectedBrand.apiKey
         );
         
         // Log full response for debugging

@@ -6,13 +6,19 @@ class NeuronwriterService {
     this.baseURL = 'https://api.neuronwriter.com';
   }
   
-  async getApiKey() {
+async getApiKey(brandApiKey = null) {
     try {
+      // Use brand-specific API key if provided
+      if (brandApiKey && brandApiKey.trim() !== '') {
+        return brandApiKey;
+      }
+      
+      // Fallback to global settings
       const settings = await settingsService.getSettings();
       const apiKey = settings.neuronwriterApiKey;
       
       if (!apiKey || apiKey.trim() === '') {
-        throw new Error('Neuronwriter API key not configured. Please add your API key in Settings.');
+        throw new Error('Neuronwriter API key not configured. Please add your API key in Settings or configure brand-specific API keys.');
       }
       
       return apiKey;
@@ -24,19 +30,19 @@ class NeuronwriterService {
     }
   }
   
-  async getHeaders() {
-    const apiKey = await this.getApiKey();
+async getHeaders(brandApiKey = null) {
+    const apiKey = await this.getApiKey(brandApiKey);
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
     };
   }
 
-  async newQuery(project, keyword, language = 'English', engine = 'google.com') {
+async newQuery(project, keyword, language = 'English', engine = 'google.com', brandApiKey = null) {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const headers = await this.getHeaders();
+      const headers = await this.getHeaders(brandApiKey);
       const queryData = {
         project,
         keyword,
