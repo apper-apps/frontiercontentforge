@@ -20,26 +20,12 @@ const [formData, setFormData] = useState({
     contentType: '',
     location: ''
   });
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
   const [errors, setErrors] = useState({});
 
   const debouncedKeywords = useDebounce(formData.keywords, 300);
-
-  useEffect(() => {
-    loadBrands();
-  }, []);
-
-  const loadBrands = async () => {
-    try {
-      const brandData = await brandService.getAll();
-      setBrands(brandData);
-    } catch (error) {
-      toast.error('Failed to load brands');
-    }
-  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -197,23 +183,17 @@ toast.success('Content generated successfully!');
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+<form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             label="Company Name"
-            type="select"
             required
+            placeholder="e.g., Mr. Handyman, ABC Company"
             value={formData.companyName}
             onChange={(e) => handleInputChange('companyName', e.target.value)}
             error={errors.companyName}
-          >
-            <option value="">Select a company</option>
-            {brands.map(brand => (
-              <option key={brand.Id} value={brand.name}>
-                {brand.name}
-              </option>
-            ))}
-          </FormField>
+            helpText="Enter your company name"
+          />
 
           <FormField
             label="Keywords"
