@@ -8,9 +8,10 @@ import FormField from '@/components/molecules/FormField';
 import settingsService from '@/services/api/settingsService';
 
 const Settings = () => {
-  const [settings, setSettings] = useState({
+const [settings, setSettings] = useState({
     anthropicApiKey: '',
-    perplexityApiKey: ''
+    perplexityApiKey: '',
+    neuronwriterApiKey: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,8 +32,8 @@ const Settings = () => {
     }
   };
 
-  const handleSave = async () => {
-    if (!settings.anthropicApiKey.trim() && !settings.perplexityApiKey.trim()) {
+const handleSave = async () => {
+    if (!settings.anthropicApiKey.trim() && !settings.perplexityApiKey.trim() && !settings.neuronwriterApiKey.trim()) {
       toast.error('Please provide at least one API key');
       return;
     }
@@ -131,8 +132,17 @@ const Settings = () => {
                   <span className="font-medium">Current:</span> {maskApiKey(settings.perplexityApiKey)}
                 </div>
               )}
-            </div>
+</div>
           </div>
+
+          <FormField
+            label="Neuronwriter API Key"
+            type="password"
+            value={settings.neuronwriterApiKey}
+            onChange={(value) => handleInputChange('neuronwriterApiKey', value)}
+            placeholder="Enter your Neuronwriter API key"
+            helperText="Required for SEO content analysis and optimization features"
+          />
 
           <div className="pt-4 border-t border-gray-200">
             <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
@@ -167,10 +177,10 @@ const Settings = () => {
             <ApperIcon name="Zap" size={20} className="text-white" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 mb-1">Neuronwriter Integration</h3>
+<h3 className="font-semibold text-gray-900 mb-1">Neuronwriter Integration</h3>
             <p className="text-gray-600 mb-3">
-              The Neuronwriter integration is automatically configured through your brand settings. 
-              When you generate content, queries will be created in Neuronwriter for SEO analysis.
+              Configure your Neuronwriter API key above to enable SEO content analysis and optimization. 
+              When you generate content, queries will be created in Neuronwriter for comprehensive SEO insights.
             </p>
             <div className="text-sm text-gray-500">
               <p>• Automatic query generation during content creation</p>
