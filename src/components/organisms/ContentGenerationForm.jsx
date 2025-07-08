@@ -14,11 +14,12 @@ import aiService from "@/services/api/aiService";
 import documentService from "@/services/api/documentService";
 
 const ContentGenerationForm = ({ onDocumentCreated }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     brandId: '',
     keywords: '',
     contentType: '',
-    location: ''
+    location: '',
+    dbaField: ''
   });
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -165,11 +166,12 @@ const validateForm = () => {
 toast.success('Content generated successfully!');
       
 // Reset form
-      setFormData({
+setFormData({
         brandId: '',
         keywords: '',
         contentType: '',
-        location: ''
+        location: '',
+        dbaField: ''
       });
       if (onDocumentCreated) {
         onDocumentCreated(createdDocument);
@@ -264,12 +266,21 @@ const handleInputChange = (field, value) => {
             <option value="Product Description">Product Description</option>
           </FormField>
 
-          <FormField
+<FormField
             label="Location (Optional)"
             placeholder="e.g., New York, NY"
             value={formData.location}
             onChange={(e) => handleInputChange('location', e.target.value)}
-helpText="Add location for local SEO optimization"
+            helpText="Add location for local SEO optimization"
+            className="md:col-span-2"
+          />
+
+          <FormField
+            label="DBA Field (Optional)"
+            placeholder="e.g., ABC Construction Services"
+            value={formData.dbaField}
+            onChange={(e) => handleInputChange('dbaField', e.target.value)}
+            helpText="Doing Business As name for your company"
             className="md:col-span-2"
           />
         </div>
