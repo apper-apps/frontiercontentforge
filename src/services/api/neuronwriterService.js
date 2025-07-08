@@ -3,157 +3,218 @@ import settingsService from '@/services/api/settingsService';
 
 class NeuronwriterService {
   constructor() {
-    this.baseUrl = '/api/neuronwriter';
+    this.baseUrl = 'https://neuronwriter.com/api';
   }
 
-  async generateQuery(keywords, options = {}) {
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
+  async newQuery(project, keyword, language = 'English', engine = 'google.com') {
     try {
-      // Simulate Neuronwriter query generation
-      const { contentType, location, projectId } = options;
-      const locationText = location ? ` in ${location}` : '';
+      // Get Neuronwriter API key from settings
+      const settings = await settingsService.getSettings();
+      const apiKey = settings.neuronwriterApiKey;
       
-      const queryId = `query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const queryUrl = `https://neuronwriter.com/queries/${queryId}`;
+      if (!apiKey) {
+        throw new Error('Neuronwriter API key not configured in settings');
+      }
+
+      const response = await fetchWithRetry(`${this.baseUrl}/new-query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          project,
+          keyword,
+          language,
+          engine
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Neuronwriter API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
       
-      const queryResult = {
+      return {
         success: true,
-        queryId,
-        queryUrl,
-        keywords,
-        contentType,
-        location,
-        projectId,
-        title: `${contentType}: ${keywords}${locationText}`,
-        status: 'generated',
-        createdAt: new Date().toISOString(),
-        metadata: {
-          searchVolume: Math.floor(Math.random() * 10000) + 1000,
-          difficulty: Math.floor(Math.random() * 80) + 20,
-          relatedQueries: [
-            `${keywords} services`,
-            `${keywords} cost`,
-            `${keywords} near me`,
-            `best ${keywords}`,
-            `${keywords} tips`
-          ]
-        }
+        queryId: result.query_id,
+        shareUrl: result.share_url,
+        queryUrl: result.query_url,
+        keyword,
+        language,
+        engine,
+        project,
+        status: 'created',
+        createdAt: new Date().toISOString()
       };
-      
-      return queryResult;
     } catch (error) {
-      throw new Error('Failed to generate Neuronwriter query');
+      console.error('Neuronwriter new-query error:', error);
+      throw new Error(`Failed to create Neuronwriter query: ${error.message}`);
     }
   }
 
-  async createAnalysis(keywords, engine = 'google', language = 'en', projectId) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+  async createAnalysis(keywords, engine = 'google.com', language = 'English', projectId) {
     try {
-      // Simulate Neuronwriter analysis creation
-      const analysisId = `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Get Neuronwriter API key from settings
+      const settings = await settingsService.getSettings();
+      const apiKey = settings.neuronwriterApiKey;
       
-      const analysis = {
-        id: analysisId,
+      if (!apiKey) {
+        throw new Error('Neuronwriter API key not configured in settings');
+      }
+
+      const response = await fetchWithRetry(`${this.baseUrl}/analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          project: projectId,
+          keyword: keywords,
+          language,
+          engine
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Neuronwriter API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      return {
+        id: result.analysis_id,
         keywords,
         engine,
         language,
         projectId,
-        queryUrl: `https://neuronwriter.com/analysis/${analysisId}`,
-        shareUrl: `https://neuronwriter.com/share/${analysisId}`,
+        shareUrl: result.share_url,
+        queryUrl: result.query_url,
         title: `SEO Analysis: ${keywords}`,
         status: 'created',
         createdAt: new Date().toISOString()
       };
-      
-      return analysis;
     } catch (error) {
-      throw new Error('Failed to create Neuronwriter analysis');
+      console.error('Neuronwriter analysis error:', error);
+      throw new Error(`Failed to create Neuronwriter analysis: ${error.message}`);
     }
   }
 
   async importContent(analysisId, content, title) {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
     try {
-      // Simulate content import
-      const importResult = {
+      // Get Neuronwriter API key from settings
+      const settings = await settingsService.getSettings();
+      const apiKey = settings.neuronwriterApiKey;
+      
+      if (!apiKey) {
+        throw new Error('Neuronwriter API key not configured in settings');
+      }
+
+      const response = await fetchWithRetry(`${this.baseUrl}/import-content`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          analysis_id: analysisId,
+          content,
+          title
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Neuronwriter API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      return {
         analysisId,
         title,
         contentLength: content.length,
         status: 'imported',
-        seoScore: Math.floor(Math.random() * 30) + 70,
-        recommendations: [
-          'Increase keyword density for primary terms',
-          'Add more semantic keywords',
-          'Improve meta description',
-          'Add internal links to related content'
-        ],
+        seoScore: result.seo_score || 0,
+        recommendations: result.recommendations || [],
         importedAt: new Date().toISOString()
       };
-      
-      return importResult;
     } catch (error) {
-      throw new Error('Failed to import content to Neuronwriter');
+      console.error('Neuronwriter import error:', error);
+      throw new Error(`Failed to import content to Neuronwriter: ${error.message}`);
     }
   }
 
   async getAnalysisStatus(analysisId) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
     try {
-      // Simulate analysis status check
-      const statuses = ['processing', 'completed', 'failed'];
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      // Get Neuronwriter API key from settings
+      const settings = await settingsService.getSettings();
+      const apiKey = settings.neuronwriterApiKey;
+      
+      if (!apiKey) {
+        throw new Error('Neuronwriter API key not configured in settings');
+      }
+
+      const response = await fetchWithRetry(`${this.baseUrl}/analysis/${analysisId}/status`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Neuronwriter API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
       
       return {
         analysisId,
-        status,
-        progress: status === 'completed' ? 100 : Math.floor(Math.random() * 80) + 20,
+        status: result.status,
+        progress: result.progress || 0,
         updatedAt: new Date().toISOString()
       };
     } catch (error) {
-      throw new Error('Failed to check analysis status');
+      console.error('Neuronwriter status error:', error);
+      throw new Error(`Failed to check analysis status: ${error.message}`);
     }
   }
 
   async getAnalysisResults(analysisId) {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
     try {
-      // Simulate analysis results
-      const results = {
+      // Get Neuronwriter API key from settings
+      const settings = await settingsService.getSettings();
+      const apiKey = settings.neuronwriterApiKey;
+      
+      if (!apiKey) {
+        throw new Error('Neuronwriter API key not configured in settings');
+      }
+
+      const response = await fetchWithRetry(`${this.baseUrl}/analysis/${analysisId}/results`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Neuronwriter API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      return {
         analysisId,
-        overallScore: Math.floor(Math.random() * 30) + 70,
-        metrics: {
-          keywordScore: Math.floor(Math.random() * 25) + 75,
-          contentScore: Math.floor(Math.random() * 20) + 80,
-          structureScore: Math.floor(Math.random() * 30) + 70,
-          readabilityScore: Math.floor(Math.random() * 20) + 80
-        },
-        recommendations: [
-          'Add more long-tail keywords',
-          'Improve heading structure',
-          'Increase content length',
-          'Add FAQ section',
-          'Optimize images with alt text'
-        ],
-        competitorAnalysis: {
-          topCompetitors: [
-            { url: 'competitor1.com', score: 85 },
-            { url: 'competitor2.com', score: 82 },
-            { url: 'competitor3.com', score: 78 }
-          ],
-          averageScore: 82,
-          yourPosition: Math.floor(Math.random() * 10) + 1
-        },
+        overallScore: result.overall_score || 0,
+        metrics: result.metrics || {},
+        recommendations: result.recommendations || [],
+        competitorAnalysis: result.competitor_analysis || {},
         generatedAt: new Date().toISOString()
       };
-      
-      return results;
     } catch (error) {
-      throw new Error('Failed to get analysis results');
+      console.error('Neuronwriter results error:', error);
+      throw new Error(`Failed to get analysis results: ${error.message}`);
     }
   }
 }

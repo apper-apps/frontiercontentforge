@@ -134,38 +134,38 @@ const validateForm = () => {
       };
 
 // Step 5: Neuronwriter integration
-      setCurrentStep('Generating Neuronwriter query...');
+      setCurrentStep('Creating Neuronwriter query...');
       try {
-        // Generate query in Neuronwriter
-        const queryResult = await neuronwriterService.generateQuery(
+        // Create new query using the new-query API endpoint
+        const queryResult = await neuronwriterService.newQuery(
+          selectedBrand.projectId || 'default_project',
           formData.keywords,
-          {
-            contentType: formData.contentType,
-            location: formData.location,
-            projectId: selectedBrand.projectId || 'default_project'
-          }
+          'English',
+          'google.com'
         );
         
         if (queryResult.success) {
-          // Create analysis if query generation was successful
-          const analysis = await neuronwriterService.createAnalysis(
-            formData.keywords,
-            'google',
-            'en',
-            selectedBrand.projectId || 'default_project'
-          );
+          // Add share URL to document metadata for content task access
+          documentData.neuronwriterShareUrl = queryResult.shareUrl;
+          documentData.neuronwriterQueryId = queryResult.queryId;
+          documentData.neuronwriterQueryUrl = queryResult.queryUrl;
           
-          const importResult = await neuronwriterService.importContent(
-            analysis.id,
-            refinedContent.content,
-            documentData.title
-          );
+          // Update metadata to include Neuronwriter integration details
+          documentData.metadata = {
+            ...documentData.metadata,
+            neuronwriter: {
+              queryId: queryResult.queryId,
+              shareUrl: queryResult.shareUrl,
+              queryUrl: queryResult.queryUrl,
+              project: selectedBrand.projectId || 'default_project',
+              keyword: formData.keywords,
+              language: 'English',
+              engine: 'google.com',
+              createdAt: queryResult.createdAt
+            }
+          };
           
-          documentData.neuronwriterUrl = analysis.shareUrl;
-          documentData.analysisId = analysis.id;
-          documentData.neuronwriterQuery = queryResult.queryUrl;
-          
-          toast.success('Neuronwriter query generated successfully!');
+          toast.success('Neuronwriter query created successfully!');
         }
       } catch (neuronError) {
         console.warn('Neuronwriter integration failed:', neuronError);

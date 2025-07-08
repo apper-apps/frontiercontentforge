@@ -7,10 +7,11 @@ class SettingsService {
     await new Promise(resolve => setTimeout(resolve, 200));
 
     try {
-      const settings = localStorage.getItem(this.storageKey);
+const settings = localStorage.getItem(this.storageKey);
       return settings ? JSON.parse(settings) : {
         anthropicApiKey: '',
-        perplexityApiKey: ''
+        perplexityApiKey: '',
+        neuronwriterApiKey: ''
       };
     } catch (error) {
       throw new Error('Failed to load settings');
@@ -28,13 +29,15 @@ class SettingsService {
     }
   }
 
-  async getApiKey(provider) {
+async getApiKey(provider) {
     const settings = await this.getSettings();
     switch (provider) {
       case 'anthropic':
         return settings.anthropicApiKey;
       case 'perplexity':
         return settings.perplexityApiKey;
+      case 'neuronwriter':
+        return settings.neuronwriterApiKey;
       default:
         return null;
     }
