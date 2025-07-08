@@ -1,8 +1,50 @@
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import settingsService from '@/services/api/settingsService';
 
 class NeuronwriterService {
   constructor() {
     this.baseUrl = '/api/neuronwriter';
+  }
+
+  async generateQuery(keywords, options = {}) {
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
+    try {
+      // Simulate Neuronwriter query generation
+      const { contentType, location, projectId } = options;
+      const locationText = location ? ` in ${location}` : '';
+      
+      const queryId = `query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const queryUrl = `https://neuronwriter.com/queries/${queryId}`;
+      
+      const queryResult = {
+        success: true,
+        queryId,
+        queryUrl,
+        keywords,
+        contentType,
+        location,
+        projectId,
+        title: `${contentType}: ${keywords}${locationText}`,
+        status: 'generated',
+        createdAt: new Date().toISOString(),
+        metadata: {
+          searchVolume: Math.floor(Math.random() * 10000) + 1000,
+          difficulty: Math.floor(Math.random() * 80) + 20,
+          relatedQueries: [
+            `${keywords} services`,
+            `${keywords} cost`,
+            `${keywords} near me`,
+            `best ${keywords}`,
+            `${keywords} tips`
+          ]
+        }
+      };
+      
+      return queryResult;
+    } catch (error) {
+      throw new Error('Failed to generate Neuronwriter query');
+    }
   }
 
   async createAnalysis(keywords, engine = 'google', language = 'en', projectId) {

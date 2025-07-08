@@ -133,15 +133,26 @@ const validateForm = () => {
         }
       };
 
-      // Step 5: Neuronwriter integration (if Mr. Handyman)
-      if (companyName === 'Mr. Handyman') {
-        setCurrentStep('Integrating with Neuronwriter...');
-        try {
+// Step 5: Neuronwriter integration
+      setCurrentStep('Generating Neuronwriter query...');
+      try {
+        // Generate query in Neuronwriter
+        const queryResult = await neuronwriterService.generateQuery(
+          formData.keywords,
+          {
+            contentType: formData.contentType,
+            location: formData.location,
+            projectId: selectedBrand.projectId || 'default_project'
+          }
+        );
+        
+        if (queryResult.success) {
+          // Create analysis if query generation was successful
           const analysis = await neuronwriterService.createAnalysis(
             formData.keywords,
             'google',
             'en',
-            'mh_project_001'
+            selectedBrand.projectId || 'default_project'
           );
           
           const importResult = await neuronwriterService.importContent(
@@ -152,10 +163,13 @@ const validateForm = () => {
           
           documentData.neuronwriterUrl = analysis.shareUrl;
           documentData.analysisId = analysis.id;
-        } catch (neuronError) {
-          console.warn('Neuronwriter integration failed:', neuronError);
-          toast.warn('Content created successfully, but Neuronwriter integration failed');
+          documentData.neuronwriterQuery = queryResult.queryUrl;
+          
+          toast.success('Neuronwriter query generated successfully!');
         }
+      } catch (neuronError) {
+        console.warn('Neuronwriter integration failed:', neuronError);
+        toast.warn('Content created successfully, but Neuronwriter integration failed');
       }
 
       const createdDocument = await documentService.create(documentData);
