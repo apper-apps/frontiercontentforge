@@ -23,13 +23,17 @@ const TeamMemberList = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState(null);
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'Viewer'
+    role: 'Viewer',
+    password: '',
+    generatePassword: true
   });
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [memberForPassword, setMemberForPassword] = useState(null);
 
   useEffect(() => {
     loadMembers();
@@ -47,6 +51,16 @@ const TeamMemberList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+const generateRandomPassword = () => {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    return password;
   };
 
   const validateForm = () => {
@@ -68,11 +82,19 @@ const TeamMemberList = () => {
       errors.role = 'Role is required';
     }
     
+    if (!formData.generatePassword) {
+      if (!formData.password.trim()) {
+        errors.password = 'Password is required when not auto-generating';
+      } else if (formData.password.length < 8) {
+        errors.password = 'Password must be at least 8 characters long';
+      }
+    }
+    
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -80,11 +102,23 @@ const TeamMemberList = () => {
     setSubmitting(true);
     
     try {
-      const newMember = await teamService.create(formData);
+      const memberData = { ...formData };
+      if (formData.generatePassword) {
+        memberData.password = generateRandomPassword();
+      }
+      
+      const newMember = await teamService.create(memberData);
       setMembers(prev => [newMember, ...prev]);
-      setFormData({ name: '', email: '', role: 'Viewer' });
+      setFormData({ name: '', email: '', role: 'Viewer', password: '', generatePassword: true });
       setShowAddForm(false);
-      toast.success('Team member added successfully');
+      
+      if (formData.generatePassword) {
+        toast.success(`Team member added successfully. Generated password: ${memberData.password}`, {
+          autoClose: 10000
+        });
+      } else {
+        toast.success('Team member added successfully');
+      }
     } catch (error) {
       toast.error('Failed to add team member');
     } finally {
@@ -118,13 +152,29 @@ const TeamMemberList = () => {
     } catch (error) {
       toast.error('Failed to remove team member');
     }
+};
+
+  const handleSetPassword = async (member) => {
+    const newPassword = prompt(`Enter new password for ${member.name}:`);
+    if (!newPassword) return;
+    
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+    
+    try {
+      await teamService.setPassword(member.Id, newPassword);
+      toast.success('Password updated successfully');
+    } catch (error) {
+      toast.error('Failed to update password');
+    }
   };
 
   const confirmDelete = (member) => {
     setMemberToDelete(member);
     setShowDeleteModal(true);
   };
-
   const getRoleBadgeVariant = (role) => {
     switch (role) {
       case 'Admin':
@@ -203,7 +253,7 @@ const TeamMemberList = () => {
                   placeholder="Enter email address"
                 />
               </div>
-              <FormField
+<FormField
                 label="Role"
                 type="select"
                 required
@@ -215,6 +265,37 @@ const TeamMemberList = () => {
                 <option value="Editor">Editor</option>
                 <option value="Admin">Admin</option>
               </FormField>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="generatePassword"
+                    checked={formData.generatePassword}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      generatePassword: e.target.checked,
+                      password: e.target.checked ? '' : prev.password 
+                    }))}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <label htmlFor="generatePassword" className="text-sm font-medium text-gray-700">
+                    Auto-generate password
+                  </label>
+                </div>
+                
+                {!formData.generatePassword && (
+                  <FormField
+                    label="Password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    error={formErrors.password}
+                    placeholder="Enter password (min 8 characters)"
+                  />
+                )}
+              </div>
               <div className="flex justify-end gap-3">
                 <Button
                   type="button"
@@ -293,8 +374,13 @@ const TeamMemberList = () => {
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      <ActionMenu
+<ActionMenu
                         items={[
+                          {
+                            label: 'Set Password',
+                            icon: 'Key',
+                            onClick: () => handleSetPassword(member)
+                          },
                           {
                             label: 'Change Role',
                             icon: 'Shield',

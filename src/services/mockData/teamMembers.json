@@ -4,6 +4,7 @@
     "name": "Sarah Johnson",
     "email": "sarah.johnson@contentforge.ai",
     "role": "Admin",
+    "password": "Admin123!@#",
     "addedAt": "2024-01-10T08:00:00Z",
     "addedBy": "user_001"
   },
@@ -12,6 +13,7 @@
     "name": "Michael Chen",
     "email": "michael.chen@contentforge.ai",
     "role": "Editor",
+    "password": "Editor456$%^",
     "addedAt": "2024-01-12T10:30:00Z",
     "addedBy": "user_001"
   },
@@ -20,6 +22,7 @@
     "name": "Emily Rodriguez",
     "email": "emily.rodriguez@contentforge.ai",
     "role": "Editor",
+    "password": "Edit789&*()",
     "addedAt": "2024-01-15T14:15:00Z",
     "addedBy": "user_001"
   },
@@ -28,6 +31,7 @@
     "name": "David Thompson",
     "email": "david.thompson@contentforge.ai",
     "role": "Viewer",
+    "password": "View012!@#",
     "addedAt": "2024-01-18T11:45:00Z",
     "addedBy": "user_001"
   },
@@ -36,6 +40,7 @@
     "name": "Lisa Park",
     "email": "lisa.park@contentforge.ai",
     "role": "Editor",
+    "password": "Lisa345$%^",
     "addedAt": "2024-01-22T16:20:00Z",
     "addedBy": "user_001"
   }

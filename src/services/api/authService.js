@@ -3,24 +3,38 @@ class AuthService {
     this.storageKey = 'contentforge_auth';
   }
 
+async findTeamMemberByEmail(email) {
+    try {
+      const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+      return teamMembers.find(member => member.email === email) || null;
+    } catch (error) {
+      throw new Error('Failed to access team members');
+    }
+  }
+
   async login(email, password) {
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Demo credentials
-    if (email === 'admin@example.com' && password === 'password') {
+    try {
+      const teamMember = await this.findTeamMemberByEmail(email);
+      
+      if (!teamMember || teamMember.password !== password) {
+        throw new Error('Invalid email or password');
+      }
+
       const userData = {
-        Id: 1,
-        email: 'admin@example.com',
-        name: 'Admin User',
-        role: 'admin',
+        Id: teamMember.Id,
+        email: teamMember.email,
+        name: teamMember.name,
+        role: teamMember.role,
         loginAt: new Date().toISOString()
       };
 
       localStorage.setItem(this.storageKey, JSON.stringify(userData));
       return userData;
+    } catch (error) {
+      throw new Error(error.message || 'Login failed');
     }
-
-    throw new Error('Invalid email or password');
   }
 
   async logout() {

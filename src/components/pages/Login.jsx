@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
-import { useAuth } from '@/contexts/AuthContext';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import ApperIcon from '@/components/ApperIcon';
-import FormField from '@/components/molecules/FormField';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+import FormField from "@/components/molecules/FormField";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const { login } = useAuth();
@@ -85,19 +85,12 @@ const Login = () => {
               disabled={loading}
               icon="LogIn"
             >
-              Sign In
+Sign In
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Demo credentials: admin@example.com / password
-            </p>
-          </div>
         </Card>
       </motion.div>
     </div>
   );
 };
-
 export default Login;

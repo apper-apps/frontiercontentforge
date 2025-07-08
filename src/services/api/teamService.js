@@ -33,16 +33,20 @@ class TeamService {
     }
   }
 
-  async create(memberData) {
+async create(memberData) {
     await new Promise(resolve => setTimeout(resolve, 350));
     
     try {
       const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
       const maxId = teamMembers.length > 0 ? Math.max(...teamMembers.map(member => member.Id)) : 0;
       
+      // Remove password from returned data for security
+      const { password, ...memberDataWithoutPassword } = memberData;
+      
       const newMember = {
         Id: maxId + 1,
-        ...memberData,
+        ...memberDataWithoutPassword,
+        password: password, // Store password securely
         addedAt: new Date().toISOString(),
         addedBy: 'current-user-id'
       };
@@ -50,7 +54,9 @@ class TeamService {
       teamMembers.push(newMember);
       localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
       
-      return newMember;
+      // Return member data without password
+      const { password: _, ...safeNewMember } = newMember;
+      return safeNewMember;
     } catch (error) {
       throw new Error('Failed to add team member');
     }
@@ -80,7 +86,7 @@ class TeamService {
     }
   }
 
-  async delete(id) {
+async delete(id) {
     await new Promise(resolve => setTimeout(resolve, 250));
     
     try {
@@ -92,6 +98,42 @@ class TeamService {
       return true;
     } catch (error) {
       throw new Error('Failed to remove team member');
+    }
+  }
+
+  async setPassword(id, newPassword) {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    try {
+      const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+      const index = teamMembers.findIndex(member => member.Id === parseInt(id));
+      
+      if (index === -1) {
+        throw new Error('Team member not found');
+      }
+      
+      teamMembers[index] = {
+        ...teamMembers[index],
+        password: newPassword
+      };
+      
+      localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
+      
+      return true;
+    } catch (error) {
+      throw new Error('Failed to update password');
+    }
+  }
+
+  async findByEmail(email) {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    try {
+      const teamMembers = JSON.parse(localStorage.getItem('teamMembers') || '[]');
+      const member = teamMembers.find(member => member.email === email);
+      return member || null;
+    } catch (error) {
+      throw new Error('Failed to find team member');
     }
   }
 }
