@@ -25,11 +25,14 @@ const Brands = () => {
   const [selectedBrandForLocation, setSelectedBrandForLocation] = useState(null);
   const [expandedBrand, setExpandedBrand] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, type: null, item: null });
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: '',
     apiKey: '',
     projectId: '',
-    description: ''
+    description: '',
+    websiteUrl: '',
+    searchEngine: 'google.com',
+    language: 'English'
   });
   const [locationFormData, setLocationFormData] = useState({
     name: '',
@@ -65,22 +68,28 @@ const Brands = () => {
 
   const handleCreateBrand = () => {
     setEditingBrand(null);
-    setFormData({
+setFormData({
       name: '',
       apiKey: '',
       projectId: '',
-      description: ''
+      description: '',
+      websiteUrl: '',
+      searchEngine: 'google.com',
+      language: 'English'
     });
     setShowModal(true);
   };
 
   const handleEditBrand = (brand) => {
     setEditingBrand(brand);
-    setFormData({
+setFormData({
       name: brand.name || '',
       apiKey: brand.apiKey || '',
       projectId: brand.projectId || '',
-      description: brand.description || ''
+      description: brand.description || '',
+      websiteUrl: brand.websiteUrl || '',
+      searchEngine: brand.searchEngine || 'google.com',
+      language: brand.language || 'English'
     });
     setShowModal(true);
   };
@@ -107,11 +116,14 @@ const Brands = () => {
       }
       
       setShowModal(false);
-      setFormData({
+setFormData({
         name: '',
         apiKey: '',
         projectId: '',
-        description: ''
+        description: '',
+        websiteUrl: '',
+        searchEngine: 'google.com',
+        language: 'English'
       });
     } catch (error) {
       toast.error(error.message);
@@ -505,8 +517,34 @@ const Brands = () => {
                     value={formData.projectId}
                     onChange={(e) => setFormData(prev => ({ ...prev, projectId: e.target.value }))}
                     placeholder="Enter project ID"
+/>
+
+                  <FormField
+                    label="Website URL"
+                    type="url"
+                    value={formData.websiteUrl}
+                    onChange={(e) => setFormData(prev => ({ ...prev, websiteUrl: e.target.value }))}
+                    placeholder="https://example.com"
                   />
 
+                  <FormField
+                    label="Default Search Engine"
+                    type="select"
+                    value={formData.searchEngine}
+                    onChange={(e) => setFormData(prev => ({ ...prev, searchEngine: e.target.value }))}
+                    options={[
+                      { value: 'google.com', label: 'Google.com' },
+                      { value: 'google.ca', label: 'Google.ca' }
+                    ]}
+                  />
+
+                  <FormField
+                    label="Language"
+                    type="text"
+                    value={formData.language}
+                    onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
+                    placeholder="English"
+                  />
                   <div className="flex gap-3 pt-4">
                     <Button
                       type="button"
