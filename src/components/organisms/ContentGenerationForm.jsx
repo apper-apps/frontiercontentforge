@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { motion } from 'framer-motion';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import FormField from '@/components/molecules/FormField';
-import ProgressRing from '@/components/molecules/ProgressRing';
-import ApperIcon from '@/components/ApperIcon';
-import { useDebounce } from '@/utils/debounce';
-import aiService from '@/services/api/aiService';
-import documentService from '@/services/api/documentService';
-import neuronwriterService from '@/services/api/neuronwriterService';
-import brandService from '@/services/api/brandService';
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import { useDebounce } from "@/utils/debounce";
+import ApperIcon from "@/components/ApperIcon";
+import Select from "@/components/atoms/Select";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+import ProgressRing from "@/components/molecules/ProgressRing";
+import FormField from "@/components/molecules/FormField";
+import neuronwriterService from "@/services/api/neuronwriterService";
+import brandService from "@/services/api/brandService";
+import aiService from "@/services/api/aiService";
+import documentService from "@/services/api/documentService";
 
 const ContentGenerationForm = ({ onDocumentCreated }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     companyName: '',
     keywords: '',
     contentType: '',
-    contentGoal: '',
     location: ''
   });
   const [brands, setBrands] = useState([]);
@@ -55,18 +55,13 @@ const ContentGenerationForm = ({ onDocumentCreated }) => {
     }
 
     if (!formData.contentType) {
+if (!formData.contentType) {
       newErrors.contentType = 'Content type is required';
-    }
-
-    if (!formData.contentGoal) {
-      newErrors.contentGoal = 'Content goal is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -113,10 +108,9 @@ const ContentGenerationForm = ({ onDocumentCreated }) => {
         contentType: formData.contentType,
         keywords: formData.keywords,
         status: 'Draft',
-        googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
+googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
         companyName: formData.companyName,
         location: formData.location,
-        contentGoal: formData.contentGoal,
         metadata: {
           ...initialContent.metadata,
           insights: insights.insights,
@@ -154,14 +148,13 @@ const ContentGenerationForm = ({ onDocumentCreated }) => {
       setProgress(100);
       setCurrentStep('Content generation completed!');
       
-      toast.success('Content generated successfully!');
+toast.success('Content generated successfully!');
       
       // Reset form
       setFormData({
         companyName: '',
         keywords: '',
         contentType: '',
-        contentGoal: '',
         location: ''
       });
       
@@ -244,24 +237,8 @@ const ContentGenerationForm = ({ onDocumentCreated }) => {
             <option value="Landing Page">Landing Page</option>
             <option value="FAQ">FAQ</option>
             <option value="Service Page">Service Page</option>
-            <option value="How-to Guide">How-to Guide</option>
+<option value="How-to Guide">How-to Guide</option>
             <option value="Product Description">Product Description</option>
-          </FormField>
-
-          <FormField
-            label="Content Goal"
-            type="select"
-            required
-            value={formData.contentGoal}
-            onChange={(e) => handleInputChange('contentGoal', e.target.value)}
-            error={errors.contentGoal}
-          >
-            <option value="">Select content goal</option>
-            <option value="Lead Generation">Lead Generation</option>
-            <option value="Brand Awareness">Brand Awareness</option>
-            <option value="SEO Ranking">SEO Ranking</option>
-            <option value="Customer Education">Customer Education</option>
-            <option value="Conversion Optimization">Conversion Optimization</option>
           </FormField>
 
           <FormField
@@ -270,6 +247,7 @@ const ContentGenerationForm = ({ onDocumentCreated }) => {
             value={formData.location}
             onChange={(e) => handleInputChange('location', e.target.value)}
             helpText="Add location for local SEO optimization"
+helpText="Add location for local SEO optimization"
             className="md:col-span-2"
           />
         </div>
@@ -277,7 +255,6 @@ const ContentGenerationForm = ({ onDocumentCreated }) => {
         {loading && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-6"
           >
             <div className="flex items-center gap-4">
