@@ -17,7 +17,7 @@ const ContentGenerationForm = ({ onDocumentCreated }) => {
 const [formData, setFormData] = useState({
     brandId: '',
     keywords: '',
-    contentType: '',
+    contentType: 'Service Page',
     location: '',
     dbaField: ''
   });
@@ -183,7 +183,7 @@ toast.success('Content generated successfully!');
 setFormData({
         brandId: '',
         keywords: '',
-        contentType: '',
+        contentType: 'Service Page',
         location: '',
         dbaField: ''
       });
@@ -263,7 +263,7 @@ const handleInputChange = (field, value) => {
             helpText="3-100 characters"
           />
 
-          <FormField
+<FormField
             label="Content Type"
             type="select"
             required
@@ -273,11 +273,9 @@ const handleInputChange = (field, value) => {
           >
             <option value="">Select content type</option>
             <option value="Blog Post">Blog Post</option>
-            <option value="Landing Page">Landing Page</option>
-            <option value="FAQ">FAQ</option>
+            <option value="Geo Service Page">Geo Service Page</option>
+            <option value="How-to Guide">How-to Guide</option>
             <option value="Service Page">Service Page</option>
-<option value="How-to Guide">How-to Guide</option>
-            <option value="Product Description">Product Description</option>
           </FormField>
 
 <FormField
