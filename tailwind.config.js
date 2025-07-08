@@ -28,7 +28,9 @@ export default {
           '100%': { backgroundPosition: 'calc(200px + 100%) 0' },
         },
       },
-    },
+},
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
