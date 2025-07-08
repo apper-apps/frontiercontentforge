@@ -4,9 +4,10 @@ import TabNavigation from '@/components/molecules/TabNavigation';
 import ApperIcon from '@/components/ApperIcon';
 
 const Layout = ({ children }) => {
-  const tabs = [
+const tabs = [
     { path: '/generate', label: 'Generate Content', icon: 'Sparkles' },
     { path: '/documents', label: 'My Documents', icon: 'FileText' },
+    { path: '/brands', label: 'Brands', icon: 'Building2' },
     { path: '/team', label: 'Team', icon: 'Users' }
   ];
 
