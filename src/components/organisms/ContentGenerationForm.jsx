@@ -54,7 +54,6 @@ const [formData, setFormData] = useState({
       newErrors.keywords = 'Keywords must be between 3 and 100 characters';
     }
 
-    if (!formData.contentType) {
 if (!formData.contentType) {
       newErrors.contentType = 'Content type is required';
     }
@@ -62,6 +61,8 @@ if (!formData.contentType) {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -246,7 +247,6 @@ toast.success('Content generated successfully!');
             placeholder="e.g., New York, NY"
             value={formData.location}
             onChange={(e) => handleInputChange('location', e.target.value)}
-            helpText="Add location for local SEO optimization"
 helpText="Add location for local SEO optimization"
             className="md:col-span-2"
           />
