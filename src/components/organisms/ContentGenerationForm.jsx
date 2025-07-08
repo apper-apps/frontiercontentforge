@@ -144,6 +144,9 @@ const validateForm = () => {
           'google.com'
         );
         
+        // Log full response for debugging
+        console.log('Neuron Writer API Response:', queryResult);
+        
         if (queryResult.success) {
           // Add share URL to document metadata for content task access
           documentData.neuronwriterShareUrl = queryResult.shareUrl;
@@ -165,11 +168,33 @@ const validateForm = () => {
             }
           };
           
-          toast.success('Neuronwriter query created successfully!');
+          // Show detailed success notification with response data
+          toast.success(
+            `Neuronwriter query created successfully! 
+            Query ID: ${queryResult.queryId || 'Not provided'}
+            Project: ${selectedBrand.projectId || 'default_project'}
+            Keyword: ${formData.keywords}
+            ${queryResult.shareUrl ? `Share URL: ${queryResult.shareUrl}` : ''}`,
+            { autoClose: 8000 }
+          );
+        } else {
+          // Show response even if success is false
+          console.log('Neuron Writer returned success: false', queryResult);
+          toast.warn(
+            `Neuronwriter query creation returned success: false. 
+            Response: ${JSON.stringify(queryResult)}`,
+            { autoClose: 8000 }
+          );
         }
       } catch (neuronError) {
-        console.warn('Neuronwriter integration failed:', neuronError);
-        toast.warn('Content created successfully, but Neuronwriter integration failed');
+        console.error('Neuronwriter integration failed:', neuronError);
+        // Show detailed error information
+        toast.warn(
+          `Content created successfully, but Neuronwriter integration failed: 
+          ${neuronError.message || neuronError.toString()}
+          Check console for full error details.`,
+          { autoClose: 8000 }
+        );
       }
 
       const createdDocument = await documentService.create(documentData);
