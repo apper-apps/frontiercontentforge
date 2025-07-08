@@ -10,8 +10,7 @@ import settingsService from '@/services/api/settingsService';
 const Settings = () => {
 const [settings, setSettings] = useState({
     anthropicApiKey: '',
-    perplexityApiKey: '',
-    neuronwriterApiKey: ''
+    perplexityApiKey: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -33,7 +32,7 @@ const [settings, setSettings] = useState({
   };
 
 const handleSave = async () => {
-    if (!settings.anthropicApiKey.trim() && !settings.perplexityApiKey.trim() && !settings.neuronwriterApiKey.trim()) {
+if (!settings.anthropicApiKey.trim() && !settings.perplexityApiKey.trim()) {
       toast.error('Please provide at least one API key');
       return;
     }
@@ -135,16 +134,20 @@ const handleSave = async () => {
 </div>
           </div>
 
-          <FormField
-            label="Neuronwriter API Key"
-            type="password"
-            value={settings.neuronwriterApiKey}
-            onChange={(value) => handleInputChange('neuronwriterApiKey', value)}
-            placeholder="Enter your Neuronwriter API key"
-            helperText="Required for SEO content analysis and optimization features"
-          />
+<div className="pt-4 border-t border-gray-200">
+            <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-lg">
+              <ApperIcon name="Building2" size={16} className="text-amber-600 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-amber-900 mb-1">Neuronwriter API Key</p>
+                <p className="text-amber-700">
+                  The Neuronwriter API key is configured in your brand settings. 
+                  Each brand can have its own Neuronwriter configuration for SEO content analysis.
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4">
             <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
               <ApperIcon name="Info" size={16} className="text-blue-600 mt-0.5" />
               <div className="text-sm">
@@ -179,7 +182,7 @@ const handleSave = async () => {
           <div className="flex-1">
 <h3 className="font-semibold text-gray-900 mb-1">Neuronwriter Integration</h3>
             <p className="text-gray-600 mb-3">
-              Configure your Neuronwriter API key above to enable SEO content analysis and optimization. 
+              Configure your Neuronwriter API key in your brand settings to enable SEO content analysis and optimization. 
               When you generate content, queries will be created in Neuronwriter for comprehensive SEO insights.
             </p>
             <div className="text-sm text-gray-500">
