@@ -94,7 +94,7 @@ const params = {
           createdAt: new Date().toISOString(),
           description: brandData.description || "",
           websiteURL: brandData.websiteUrl || "",
-          defaultSearchEngine: brandData.searchEngine || "google.com"
+          defaultSearchEngine: (brandData.searchEngine === "google.ca") ? "google.ca" : "google.com"
         }]
       };
       
@@ -142,7 +142,7 @@ const params = {
           projectId: updateData.projectId || "",
           description: updateData.description || "",
           websiteURL: updateData.websiteUrl || "",
-          defaultSearchEngine: updateData.searchEngine || "google.com"
+          defaultSearchEngine: (updateData.searchEngine === "google.ca") ? "google.ca" : "google.com"
         }]
       };
       
