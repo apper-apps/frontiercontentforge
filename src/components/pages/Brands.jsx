@@ -527,16 +527,15 @@ setFormData({
                     placeholder="https://example.com"
                   />
 
-                  <FormField
+<FormField
                     label="Default Search Engine"
                     type="select"
                     value={formData.searchEngine}
                     onChange={(e) => setFormData(prev => ({ ...prev, searchEngine: e.target.value }))}
-                    options={[
-                      { value: 'google.com', label: 'Google.com' },
-                      { value: 'google.ca', label: 'Google.ca' }
-                    ]}
-                  />
+                  >
+                    <option value="google.com">Google.com</option>
+                    <option value="google.ca">Google.ca</option>
+                  </FormField>
 
                   <FormField
                     label="Language"
