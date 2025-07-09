@@ -32,75 +32,203 @@ function AppContent() {
   const isAuthenticated = userState?.isAuthenticated || false;
   
   // Initialize ApperUI once when the app loads
-  useEffect(() => {
-    const { ApperClient, ApperUI } = window.ApperSDK;
-    
-    const client = new ApperClient({
-      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-    });
-    
-    // Initialize but don't show login yet
-    ApperUI.setup(client, {
-      target: '#authentication',
-      clientId: import.meta.env.VITE_APPER_PROJECT_ID,
-      view: 'both',
-      onSuccess: function (user) {
-        setIsInitialized(true);
-        // CRITICAL: This exact currentPath logic must be preserved in all implementations
-        // DO NOT simplify or modify this pattern as it ensures proper redirection flow
-        let currentPath = window.location.pathname + window.location.search;
-        let redirectPath = new URLSearchParams(window.location.search).get('redirect');
-        const isAuthPage = currentPath.includes('/login') || currentPath.includes('/signup') || 
-                           currentPath.includes('/callback') || currentPath.includes('/error') || 
-                           currentPath.includes('/prompt-password') || currentPath.includes('/reset-password');
+useEffect(() => {
+    const initializeSDK = async () => {
+      try {
+        // Wait for SDK to be loaded with retry mechanism
+        await waitForSDK();
         
-        if (user) {
-          // User is authenticated
-          if (redirectPath) {
-            navigate(redirectPath);
-          } else if (!isAuthPage) {
-            if (!currentPath.includes('/login') && !currentPath.includes('/signup')) {
-              navigate(currentPath);
+        const { ApperClient, ApperUI } = window.ApperSDK;
+        
+        const client = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+        });
+        
+        // Initialize but don't show login yet
+        ApperUI.setup(client, {
+          target: '#authentication',
+          clientId: import.meta.env.VITE_APPER_PROJECT_ID,
+          view: 'both',
+          onSuccess: function (user) {
+            setIsInitialized(true);
+            // CRITICAL: This exact currentPath logic must be preserved in all implementations
+            // DO NOT simplify or modify this pattern as it ensures proper redirection flow
+            let currentPath = window.location.pathname + window.location.search;
+            let redirectPath = new URLSearchParams(window.location.search).get('redirect');
+            const isAuthPage = currentPath.includes('/login') || currentPath.includes('/signup') || 
+                               currentPath.includes('/callback') || currentPath.includes('/error') || 
+                               currentPath.includes('/prompt-password') || currentPath.includes('/reset-password');
+            
+            if (user) {
+              // User is authenticated
+              if (redirectPath) {
+                navigate(redirectPath);
+              } else if (!isAuthPage) {
+                if (!currentPath.includes('/login') && !currentPath.includes('/signup')) {
+                  navigate(currentPath);
+                } else {
+                  navigate('/');
+                }
+              } else {
+                navigate('/');
+              }
+              // Store user information in Redux
+              dispatch(setUser(JSON.parse(JSON.stringify(user))));
             } else {
-              navigate('/');
+              // User is not authenticated
+              if (!isAuthPage) {
+                navigate(
+                  currentPath.includes('/signup')
+                    ? `/signup?redirect=${currentPath}`
+                    : currentPath.includes('/login')
+                    ? `/login?redirect=${currentPath}`
+                    : '/login'
+                );
+              } else if (redirectPath) {
+                if (
+                  !['error', 'signup', 'login', 'callback', 'prompt-password', 'reset-password'].some((path) => currentPath.includes(path))
+                ) {
+                  navigate(`/login?redirect=${redirectPath}`);
+                } else {
+                  navigate(currentPath);
+                }
+              } else if (isAuthPage) {
+                navigate(currentPath);
+              } else {
+                navigate('/login');
+              }
+              dispatch(clearUser());
             }
-          } else {
-            navigate('/');
+          },
+          onError: function(error) {
+            console.error("Authentication failed:", error);
+            setIsInitialized(true);
           }
-          // Store user information in Redux
-          dispatch(setUser(JSON.parse(JSON.stringify(user))));
-        } else {
-          // User is not authenticated
-          if (!isAuthPage) {
-            navigate(
-              currentPath.includes('/signup')
-                ? `/signup?redirect=${currentPath}`
-                : currentPath.includes('/login')
-                ? `/login?redirect=${currentPath}`
-                : '/login'
-            );
-          } else if (redirectPath) {
-            if (
-              !['error', 'signup', 'login', 'callback', 'prompt-password', 'reset-password'].some((path) => currentPath.includes(path))
-            ) {
-              navigate(`/login?redirect=${redirectPath}`);
-            } else {
-              navigate(currentPath);
-            }
-          } else if (isAuthPage) {
-            navigate(currentPath);
-          } else {
-            navigate('/login');
-          }
-          dispatch(clearUser());
-        }
-      },
-      onError: function(error) {
-        console.error("Authentication failed:", error);
+        });
+      } catch (error) {
+        console.error("Failed to initialize SDK:", error);
         setIsInitialized(true);
       }
-    });
+    };
+
+    const waitForSDK = async () => {
+      const maxRetries = 5;
+      const retryDelay = 1000;
+      
+      for (let i = 0; i < maxRetries; i++) {
+        if (window.ApperSDK && window.ApperSDK.ApperClient && window.ApperSDK.ApperUI) {
+          return;
+        }
+        
+        if (i < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, i)));
+        }
+      }
+      
+      throw new Error('Apper SDK failed to load after multiple attempts. Please check your network connection and try again.');
+    };
+
+    initializeSDK();
+  }, []); // No props and state should be bound
+useEffect(() => {
+    const initializeSDK = async () => {
+      try {
+        // Wait for SDK to be loaded with retry mechanism
+        await waitForSDK();
+        
+        const { ApperClient, ApperUI } = window.ApperSDK;
+        
+        const client = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+        });
+        
+        // Initialize but don't show login yet
+        ApperUI.setup(client, {
+          target: '#authentication',
+          clientId: import.meta.env.VITE_APPER_PROJECT_ID,
+          view: 'both',
+          onSuccess: function (user) {
+            setIsInitialized(true);
+            // CRITICAL: This exact currentPath logic must be preserved in all implementations
+            // DO NOT simplify or modify this pattern as it ensures proper redirection flow
+            let currentPath = window.location.pathname + window.location.search;
+            let redirectPath = new URLSearchParams(window.location.search).get('redirect');
+            const isAuthPage = currentPath.includes('/login') || currentPath.includes('/signup') || 
+                               currentPath.includes('/callback') || currentPath.includes('/error') || 
+                               currentPath.includes('/prompt-password') || currentPath.includes('/reset-password');
+            
+            if (user) {
+              // User is authenticated
+              if (redirectPath) {
+                navigate(redirectPath);
+              } else if (!isAuthPage) {
+                if (!currentPath.includes('/login') && !currentPath.includes('/signup')) {
+                  navigate(currentPath);
+                } else {
+                  navigate('/');
+                }
+              } else {
+                navigate('/');
+              }
+              // Store user information in Redux
+              dispatch(setUser(JSON.parse(JSON.stringify(user))));
+            } else {
+              // User is not authenticated
+              if (!isAuthPage) {
+                navigate(
+                  currentPath.includes('/signup')
+                    ? `/signup?redirect=${currentPath}`
+                    : currentPath.includes('/login')
+                    ? `/login?redirect=${currentPath}`
+                    : '/login'
+                );
+              } else if (redirectPath) {
+                if (
+                  !['error', 'signup', 'login', 'callback', 'prompt-password', 'reset-password'].some((path) => currentPath.includes(path))
+                ) {
+                  navigate(`/login?redirect=${redirectPath}`);
+                } else {
+                  navigate(currentPath);
+                }
+              } else if (isAuthPage) {
+                navigate(currentPath);
+              } else {
+                navigate('/login');
+              }
+              dispatch(clearUser());
+            }
+          },
+          onError: function(error) {
+            console.error("Authentication failed:", error);
+            setIsInitialized(true);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to initialize SDK:", error);
+        setIsInitialized(true);
+      }
+    };
+
+    const waitForSDK = async () => {
+      const maxRetries = 5;
+      const retryDelay = 1000;
+      
+      for (let i = 0; i < maxRetries; i++) {
+        if (window.ApperSDK && window.ApperSDK.ApperClient && window.ApperSDK.ApperUI) {
+          return;
+        }
+        
+        if (i < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, i)));
+        }
+      }
+      
+      throw new Error('Apper SDK failed to load after multiple attempts. Please check your network connection and try again.');
+    };
+
+    initializeSDK();
   }, []); // No props and state should be bound
   
   // Authentication methods to share via context
