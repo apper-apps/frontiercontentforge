@@ -101,13 +101,19 @@ useEffect(() => {
               dispatch(clearUser());
             }
           },
-          onError: function(error) {
+onError: function(error) {
             console.error("Authentication failed:", error);
+            if (error.message && error.message.includes('Network Error')) {
+              console.error("Network connectivity issue detected during authentication");
+            }
             setIsInitialized(true);
           }
         });
-      } catch (error) {
+} catch (error) {
         console.error("Failed to initialize SDK:", error);
+        if (error.message && error.message.includes('Network Error')) {
+          console.error("Network connectivity issue prevented SDK initialization");
+        }
         setIsInitialized(true);
       }
     };
@@ -132,9 +138,9 @@ useEffect(() => {
     initializeSDK();
   }, []); // No props and state should be bound
 useEffect(() => {
-    const initializeSDK = async () => {
+const initializeSDK = async () => {
       try {
-        // Wait for SDK to be loaded with retry mechanism
+        // Wait for SDK to be loaded with enhanced error handling
         await waitForSDK();
         
         const { ApperClient, ApperUI } = window.ApperSDK;
@@ -202,29 +208,66 @@ useEffect(() => {
           },
           onError: function(error) {
             console.error("Authentication failed:", error);
+            if (error.message && error.message.includes('Network Error')) {
+              console.error("Network connectivity issue detected during authentication");
+            }
             setIsInitialized(true);
           }
         });
       } catch (error) {
         console.error("Failed to initialize SDK:", error);
+        
+        // Handle specific error types
+        if (error.message && error.message.includes('Network Error')) {
+          console.error("Network connectivity issue prevented SDK initialization");
+        } else if (error.message && error.message.includes('SDK failed to load')) {
+          console.error("Apper SDK could not be loaded from CDN");
+        } else {
+          console.error("Unknown error during SDK initialization:", error);
+        }
+        
+        // Ensure app continues to function even if SDK fails
         setIsInitialized(true);
       }
     };
 
     const waitForSDK = async () => {
       const maxRetries = 5;
-      const retryDelay = 1000;
+      const baseRetryDelay = 1000;
       
       for (let i = 0; i < maxRetries; i++) {
-        if (window.ApperSDK && window.ApperSDK.ApperClient && window.ApperSDK.ApperUI) {
-          return;
-        }
-        
-        if (i < maxRetries - 1) {
-          await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, i)));
+        try {
+          // Check if SDK is available
+          if (window.ApperSDK && window.ApperSDK.ApperClient && window.ApperSDK.ApperUI) {
+            console.log('Apper SDK loaded successfully');
+            return;
+          }
+          
+          // If not the last retry, wait before trying again
+          if (i < maxRetries - 1) {
+            const delay = baseRetryDelay * Math.pow(2, i); // Exponential backoff
+            console.log(`Waiting for SDK to load, retry ${i + 1}/${maxRetries} in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        } catch (error) {
+          console.error(`Error checking SDK availability (attempt ${i + 1}):`, error);
+          if (i < maxRetries - 1) {
+            const delay = baseRetryDelay * Math.pow(2, i);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
         }
       }
       
+      // Enhanced error message with troubleshooting guidance
+      const errorMessage = `Apper SDK failed to load after ${maxRetries} attempts. This may be due to:
+      - Network connectivity issues
+      - CDN unavailability
+      - Browser blocking the script
+      - Firewall restrictions
+      
+      Please check your network connection and try refreshing the page.`;
+      
+      console.error(errorMessage);
       throw new Error('Apper SDK failed to load after multiple attempts. Please check your network connection and try again.');
     };
 
