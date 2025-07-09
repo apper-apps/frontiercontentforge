@@ -85,7 +85,7 @@ const params = {
       
       // Only include updateable fields
 const params = {
-        records: [{
+records: [{
           Name: brandData.name,
           Tags: brandData.tags || "",
           Owner: brandData.owner || null,
@@ -94,7 +94,7 @@ const params = {
           createdAt: new Date().toISOString(),
           description: brandData.description || "",
           websiteURL: brandData.websiteUrl || "",
-          defaultSearchEngine: (brandData.searchEngine === "google.ca") ? "google.ca" : "google.com"
+          defaultSearchEngine: brandData.searchEngine === "google.ca" ? "google.ca" : "google.com"
         }]
       };
       
@@ -134,7 +134,7 @@ const params = {
       // Only include updateable fields
 const params = {
         records: [{
-          Id: parseInt(id),
+Id: parseInt(id),
           Name: updateData.name,
           Tags: updateData.tags || "",
           Owner: updateData.owner || null,
@@ -142,7 +142,7 @@ const params = {
           projectId: updateData.projectId || "",
           description: updateData.description || "",
           websiteURL: updateData.websiteUrl || "",
-          defaultSearchEngine: (updateData.searchEngine === "google.ca") ? "google.ca" : "google.com"
+          defaultSearchEngine: updateData.searchEngine === "google.ca" ? "google.ca" : "google.com"
         }]
       };
       
