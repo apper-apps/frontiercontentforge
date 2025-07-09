@@ -91,13 +91,16 @@ class DocumentService {
     }
   }
 
-  async create(documentData) {
+async create(documentData) {
     try {
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
+      
+      // Prepare neuronwriter URL - use shareUrl if available, otherwise empty string
+      const neuronwriterUrl = documentData.neuronwriterShareUrl || documentData.neuronwriterUrl || "";
       
       // Only include updateable fields
       const params = {
@@ -111,7 +114,7 @@ class DocumentService {
           keywords: documentData.keywords || "",
           status: documentData.status || "Draft",
           googleDocUrl: documentData.googleDocUrl || "",
-          neuronwriterUrl: documentData.neuronwriterUrl || "",
+          neuronwriterUrl: neuronwriterUrl,
           analysisId: documentData.analysisId || "",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

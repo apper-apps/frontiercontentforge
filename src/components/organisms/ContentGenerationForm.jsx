@@ -116,13 +116,14 @@ const validateForm = () => {
       const selectedBrand = brands.find(brand => brand.Id === parseInt(formData.brandId));
       const companyName = selectedBrand ? selectedBrand.name : '';
       
-      const documentData = {
+const documentData = {
         title: `${formData.contentType}: ${formData.keywords}`,
         content: refinedContent.content,
         contentType: formData.contentType,
         keywords: formData.keywords,
         status: 'Draft',
         googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
+        neuronwriterUrl: "", // Initialize as empty string, will be updated if neuronwriter succeeds
         companyName: companyName,
         brandId: formData.brandId,
         location: formData.location,
@@ -240,6 +241,8 @@ const validateForm = () => {
           documentData.neuronwriterShareUrl = queryResult.shareUrl;
           documentData.neuronwriterQueryId = queryId;
           documentData.neuronwriterQueryUrl = queryResult.queryUrl;
+          // Update the neuronwriterUrl field with the shareUrl for database storage
+          documentData.neuronwriterUrl = queryResult.shareUrl || "";
           
           // Update metadata to include Neuronwriter integration details and fetched data
           documentData.metadata = {
@@ -278,7 +281,6 @@ const validateForm = () => {
           { autoClose: 8000 }
         );
       }
-
       const createdDocument = await documentService.create(documentData);
       
       setProgress(100);
