@@ -11,14 +11,17 @@ class BrandService {
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-      const params = {
+const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "Tags" } },
           { field: { Name: "Owner" } },
           { field: { Name: "apiKey" } },
           { field: { Name: "projectId" } },
-          { field: { Name: "createdAt" } }
+          { field: { Name: "createdAt" } },
+          { field: { Name: "description" } },
+          { field: { Name: "websiteURL" } },
+          { field: { Name: "defaultSearchEngine" } }
         ]
       };
       
@@ -44,14 +47,17 @@ class BrandService {
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-      const params = {
+const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "Tags" } },
           { field: { Name: "Owner" } },
           { field: { Name: "apiKey" } },
           { field: { Name: "projectId" } },
-          { field: { Name: "createdAt" } }
+          { field: { Name: "createdAt" } },
+          { field: { Name: "description" } },
+          { field: { Name: "websiteURL" } },
+          { field: { Name: "defaultSearchEngine" } }
         ]
       };
       
@@ -78,14 +84,17 @@ class BrandService {
       });
       
       // Only include updateable fields
-      const params = {
+const params = {
         records: [{
           Name: brandData.name,
           Tags: brandData.tags || "",
           Owner: brandData.owner || null,
           apiKey: brandData.apiKey || "",
           projectId: brandData.projectId || "",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          description: brandData.description || "",
+          websiteURL: brandData.websiteUrl || "",
+          defaultSearchEngine: brandData.searchEngine || "google.com"
         }]
       };
       
@@ -123,14 +132,17 @@ class BrandService {
       });
       
       // Only include updateable fields
-      const params = {
+const params = {
         records: [{
           Id: parseInt(id),
           Name: updateData.name,
           Tags: updateData.tags || "",
           Owner: updateData.owner || null,
           apiKey: updateData.apiKey || "",
-          projectId: updateData.projectId || ""
+          projectId: updateData.projectId || "",
+          description: updateData.description || "",
+          websiteURL: updateData.websiteUrl || "",
+          defaultSearchEngine: updateData.searchEngine || "google.com"
         }]
       };
       

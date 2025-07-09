@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-toastify';
-import Card from '@/components/atoms/Card';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import ApperIcon from '@/components/ApperIcon';
-import SearchBar from '@/components/molecules/SearchBar';
-import FormField from '@/components/molecules/FormField';
-import ConfirmationModal from '@/components/organisms/ConfirmationModal';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import Empty from '@/components/ui/Empty';
-import brandService from '@/services/api/brandService';
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import ConfirmationModal from "@/components/organisms/ConfirmationModal";
+import Button from "@/components/atoms/Button";
+import Card from "@/components/atoms/Card";
+import Input from "@/components/atoms/Input";
+import Empty from "@/components/ui/Empty";
+import Error from "@/components/ui/Error";
+import Loading from "@/components/ui/Loading";
+import FormField from "@/components/molecules/FormField";
+import SearchBar from "@/components/molecules/SearchBar";
+import brandService from "@/services/api/brandService";
 
 const Brands = () => {
   const [brands, setBrands] = useState([]);
@@ -79,15 +79,15 @@ setFormData({
     setShowModal(true);
   };
 
-  const handleEditBrand = (brand) => {
+const handleEditBrand = (brand) => {
     setEditingBrand(brand);
-setFormData({
-      name: brand.name || '',
+    setFormData({
+      name: brand.Name || '',
       apiKey: brand.apiKey || '',
       projectId: brand.projectId || '',
       description: brand.description || '',
-      websiteUrl: brand.websiteUrl || '',
-      searchEngine: brand.searchEngine || 'google.com',
+      websiteUrl: brand.websiteURL || '',
+      searchEngine: brand.defaultSearchEngine || 'google.com',
       language: brand.language || 'English'
     });
     setShowModal(true);
@@ -286,14 +286,13 @@ setFormData({
                         <div className="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
                           <ApperIcon name="Building2" size={20} className="text-white" />
                         </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{brand.name}</h3>
+<div>
+                          <h3 className="text-lg font-semibold text-gray-900">{brand.Name}</h3>
                           {brand.description && (
                             <p className="text-sm text-gray-600 mt-1">{brand.description}</p>
                           )}
                         </div>
                       </div>
-                      
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <ApperIcon name="Key" size={14} />
@@ -597,8 +596,8 @@ setFormData({
 
                 {selectedBrandForLocation && (
                   <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">Adding location to:</p>
-                    <p className="font-medium text-gray-900">{selectedBrandForLocation.name}</p>
+<p className="text-sm text-gray-600">Adding location to:</p>
+                    <p className="font-medium text-gray-900">{selectedBrandForLocation.Name}</p>
                   </div>
                 )}
 
@@ -681,7 +680,7 @@ setFormData({
         onConfirm={deleteModal.type === 'brand' ? handleDeleteBrand : handleDeleteLocation}
         type="danger"
         title={`Delete ${deleteModal.type === 'brand' ? 'Brand' : 'Location'}`}
-        message={`Are you sure you want to delete ${deleteModal.item?.name}? This action cannot be undone.`}
+message={`Are you sure you want to delete ${deleteModal.item?.Name || deleteModal.item?.name}? This action cannot be undone.`}
       />
     </div>
   );
