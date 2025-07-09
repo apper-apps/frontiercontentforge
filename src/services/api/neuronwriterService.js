@@ -1,5 +1,7 @@
-import { fetchWithRetry } from '@/utils/fetchWithRetry'
-import settingsService from '@/services/api/settingsService'
+import React from "react";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import Error from "@/components/ui/Error";
+import settingsService from "@/services/api/settingsService";
 
 class NeuronwriterService {
   constructor() {
@@ -62,7 +64,20 @@ class NeuronwriterService {
       throw new Error(`Unable to reach Neuronwriter API during ${operation}. The service may be temporarily unavailable.`);
     }
 
-    throw error;
+throw error;
+  }
+
+  // Utility method to sanitize URLs by removing protocol and www prefixes
+  sanitizeUrl(url) {
+    if (!url || typeof url !== 'string') {
+      return url;
+    }
+    
+    // Remove protocol (https://, http://) and www. prefix
+    return url
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .trim();
   }
 
   generateMockResponse(operation, data = {}) {
