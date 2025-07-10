@@ -75,7 +75,7 @@ const params = {
     }
   }
 
-  async create(brandData) {
+async create(brandData) {
     try {
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
@@ -83,18 +83,19 @@ const params = {
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-      // Only include updateable fields
-const params = {
-records: [{
+      // Only include updateable fields with exact picklist values
+      const params = {
+        records: [{
           Name: brandData.name,
           Tags: brandData.tags || "",
           Owner: brandData.owner || null,
           apiKey: brandData.apiKey || "",
           projectId: brandData.projectId || "",
           createdAt: new Date().toISOString(),
-description: brandData.description || "",
+          description: brandData.description || "",
           websiteURL: brandData.websiteUrl || "",
-          defaultSearchEngine: brandData.searchEngine || "google.com"
+          // Ensure exact picklist value match - must be "google.com" or "google.ca"
+          defaultSearchEngine: brandData.searchEngine === "google.ca" ? "google.ca" : "google.com"
         }]
       };
       
@@ -123,7 +124,7 @@ description: brandData.description || "",
     }
   }
 
-  async update(id, updateData) {
+async update(id, updateData) {
     try {
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
@@ -131,18 +132,19 @@ description: brandData.description || "",
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-      // Only include updateable fields
-const params = {
+      // Only include updateable fields with exact picklist values
+      const params = {
         records: [{
-Id: parseInt(id),
+          Id: parseInt(id),
           Name: updateData.name,
           Tags: updateData.tags || "",
           Owner: updateData.owner || null,
           apiKey: updateData.apiKey || "",
           projectId: updateData.projectId || "",
-description: updateData.description || "",
+          description: updateData.description || "",
           websiteURL: updateData.websiteUrl || "",
-          defaultSearchEngine: updateData.searchEngine || "google.com"
+          // Ensure exact picklist value match - must be "google.com" or "google.ca"
+          defaultSearchEngine: updateData.searchEngine === "google.ca" ? "google.ca" : "google.com"
         }]
       };
       
