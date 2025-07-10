@@ -87,8 +87,7 @@ const handleEditBrand = (brand) => {
       projectId: brand.projectId || '',
       description: brand.description || '',
       websiteUrl: brand.websiteURL || '',
-      searchEngine: (brand.defaultSearchEngine === 'google.ca') ? 'google.ca' : 'google.com',
-      language: brand.language || 'English'
+      searchEngine: (brand.defaultSearchEngine === 'google.ca') ? 'google.ca' : 'google.com'
     });
     setShowModal(true);
   };
