@@ -138,7 +138,7 @@ const documentData = {
       setCurrentStep('Creating Neuronwriter query...');
       let neuronwriterData = {};
       
-      try {
+try {
         // Validate brand credentials
         if (!selectedBrand.projectId) {
           throw new Error(`Brand "${selectedBrand.name}" is missing Project ID. Please update brand settings.`);
@@ -146,13 +146,16 @@ const documentData = {
         if (!selectedBrand.apiKey) {
           throw new Error(`Brand "${selectedBrand.name}" is missing API key. Please update brand settings.`);
         }
-        
-        // Create new query using brand-specific credentials
+        if (!selectedBrand.defaultSearchEngine) {
+          console.warn(`Brand "${selectedBrand.name}" has no search engine configured, defaulting to google.com`);
+        }
+// Create new query using brand-specific credentials
+        const searchEngine = selectedBrand.defaultSearchEngine || 'google.com';
         const queryResult = await neuronwriterService.newQuery(
           selectedBrand.projectId,
           formData.keywords,
           'English',
-          'google.com',
+          searchEngine,
           selectedBrand.apiKey
         );
         
@@ -174,10 +177,10 @@ const documentData = {
           setCurrentStep('Fetching Neuronwriter analysis data...');
           
           try {
-            // Create analysis for the query
+// Create analysis for the query
             const analysisResult = await neuronwriterService.createAnalysis(
               formData.keywords,
-              'google.com',
+              searchEngine,
               'English',
               selectedBrand.projectId
             );
@@ -251,10 +254,10 @@ const documentData = {
               queryId: queryId,
               shareUrl: queryResult.shareUrl,
               queryUrl: queryResult.queryUrl,
-              project: selectedBrand.projectId || 'default_project',
+project: selectedBrand.projectId || 'default_project',
               keyword: formData.keywords,
               language: 'English',
-              engine: 'google.com',
+              engine: searchEngine,
               createdAt: queryResult.createdAt,
               // Add the fetched data for content task enhancement
               analysisData: neuronwriterData
