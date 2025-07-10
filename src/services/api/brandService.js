@@ -92,9 +92,9 @@ records: [{
           apiKey: brandData.apiKey || "",
           projectId: brandData.projectId || "",
           createdAt: new Date().toISOString(),
-          description: brandData.description || "",
+description: brandData.description || "",
           websiteURL: brandData.websiteUrl || "",
-          defaultSearchEngine: brandData.searchEngine === "google.ca" ? "google.ca" : "google.com"
+          defaultSearchEngine: brandData.searchEngine || "google.com"
         }]
       };
       
@@ -140,9 +140,9 @@ Id: parseInt(id),
           Owner: updateData.owner || null,
           apiKey: updateData.apiKey || "",
           projectId: updateData.projectId || "",
-          description: updateData.description || "",
+description: updateData.description || "",
           websiteURL: updateData.websiteUrl || "",
-          defaultSearchEngine: updateData.searchEngine === "google.ca" ? "google.ca" : "google.com"
+          defaultSearchEngine: updateData.searchEngine || "google.com"
         }]
       };
       
