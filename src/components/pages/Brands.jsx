@@ -81,13 +81,22 @@ setFormData({
 
 const handleEditBrand = (brand) => {
     setEditingBrand(brand);
+    
+    // Ensure valid search engine value mapping
+    const validSearchEngines = ["google.com", "google.ca"];
+    let searchEngine = "google.com"; // Default value
+    
+    if (brand.defaultSearchEngine && validSearchEngines.includes(brand.defaultSearchEngine)) {
+      searchEngine = brand.defaultSearchEngine;
+    }
+    
     setFormData({
       name: brand.Name || '',
       apiKey: brand.apiKey || '',
       projectId: brand.projectId || '',
       description: brand.description || '',
       websiteUrl: brand.websiteURL || '',
-      searchEngine: (brand.defaultSearchEngine === 'google.ca') ? 'google.ca' : 'google.com'
+      searchEngine: searchEngine
     });
     setShowModal(true);
   };

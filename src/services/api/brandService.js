@@ -83,7 +83,15 @@ async create(brandData) {
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-      // Only include updateable fields with exact picklist values
+      // Validate and ensure exact picklist value match
+      const validSearchEngines = ["google.com", "google.ca"];
+      let searchEngine = "google.com"; // Default value
+      
+      if (brandData.searchEngine && validSearchEngines.includes(brandData.searchEngine)) {
+        searchEngine = brandData.searchEngine;
+      }
+      
+      // Only include updateable fields with validated picklist values
       const params = {
         records: [{
           Name: brandData.name,
@@ -95,7 +103,7 @@ async create(brandData) {
           description: brandData.description || "",
           websiteURL: brandData.websiteUrl || "",
           // Ensure exact picklist value match - must be "google.com" or "google.ca"
-          defaultSearchEngine: brandData.searchEngine === "google.ca" ? "google.ca" : "google.com"
+          defaultSearchEngine: searchEngine
         }]
       };
       
@@ -132,7 +140,15 @@ async update(id, updateData) {
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-      // Only include updateable fields with exact picklist values
+      // Validate and ensure exact picklist value match
+      const validSearchEngines = ["google.com", "google.ca"];
+      let searchEngine = "google.com"; // Default value
+      
+      if (updateData.searchEngine && validSearchEngines.includes(updateData.searchEngine)) {
+        searchEngine = updateData.searchEngine;
+      }
+      
+      // Only include updateable fields with validated picklist values
       const params = {
         records: [{
           Id: parseInt(id),
@@ -144,7 +160,7 @@ async update(id, updateData) {
           description: updateData.description || "",
           websiteURL: updateData.websiteUrl || "",
           // Ensure exact picklist value match - must be "google.com" or "google.ca"
-          defaultSearchEngine: updateData.searchEngine === "google.ca" ? "google.ca" : "google.com"
+          defaultSearchEngine: searchEngine
         }]
       };
       
