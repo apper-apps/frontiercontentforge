@@ -37,9 +37,8 @@ export async function fetchWithRetry(url, options = {}, maxRetries = 3) {
     }
   }
 }
-
-// Enhanced retry function with exponential backoff
-export async function fetchWithRetry(operation, options = {}) {
+// Generic retry function with exponential backoff for any operation
+export async function retryOperation(operation, options = {}) {
   const {
     maxRetries = 3,
     baseDelay = 1000,
