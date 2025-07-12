@@ -38,6 +38,50 @@ export async function fetchWithRetry(url, options = {}, maxRetries = 3) {
   }
 }
 
+// Enhanced retry function with exponential backoff
+export async function fetchWithRetry(operation, options = {}) {
+  const {
+    maxRetries = 3,
+    baseDelay = 1000,
+    maxDelay = 10000,
+    backoffFactor = 2,
+    retryCondition = (error) => {
+      return error.message && (
+        error.message.includes('Network Error') ||
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('timeout') ||
+        error.message.includes('ERR_NETWORK') ||
+        error.message.includes('CONNECTION_ERROR')
+      );
+    }
+  } = options;
+
+  let lastError;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      
+      // Don't retry if it's the last attempt or if retry condition is not met
+      if (attempt === maxRetries || !retryCondition(error)) {
+        throw error;
+      }
+      
+      // Calculate delay with exponential backoff
+      const delay = Math.min(baseDelay * Math.pow(backoffFactor, attempt), maxDelay);
+      
+      console.warn(`Operation failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`, error.message);
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError;
+}
+
 // Utility function to check if SDK is loaded
 export function isSDKLoaded() {
   return typeof window !== 'undefined' && 

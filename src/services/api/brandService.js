@@ -1,3 +1,4 @@
+import { fetchWithRetry, waitForSDKLoad } from "@/utils/fetchWithRetry";
 class BrandService {
   constructor() {
     this.tableName = 'brand';
@@ -222,82 +223,104 @@ async create(brandData) {
 
 async update(id, updateData) {
     try {
-      // Validate SDK availability and connectivity before updating
+      // Enhanced SDK validation with retry logic
       if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
-        throw new Error('Apper SDK not loaded. Please refresh the page and try again.');
+        const { waitForSDKLoad } = await import('@/utils/fetchWithRetry');
+        await waitForSDKLoad(5000);
+        
+        if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
+          throw new Error('Apper SDK not loaded. Please refresh the page and try again.');
+        }
       }
 
+      // Test basic connectivity before attempting update
+      const { fetchWithRetry } = await import('@/utils/fetchWithRetry');
+      
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
+
+      // Filter data to include only updateable fields
+      const filteredData = {};
+      const updateableFields = ['Name', 'Tags', 'Owner', 'apiKey', 'projectId', 'createdAt', 'defaultSearchEngine', 'description', 'websiteURL'];
       
-      // Validate and ensure exact picklist value match
-      const validSearchEngines = ["google.com", "google.ca"];
-      let searchEngine = "google.com"; // Default value
-      
-      if (updateData.searchEngine && validSearchEngines.includes(updateData.searchEngine)) {
-        searchEngine = updateData.searchEngine;
-      }
-      
-      // Only include updateable fields with validated picklist values
+      updateableFields.forEach(field => {
+        if (updateData.hasOwnProperty(field)) {
+          filteredData[field] = updateData[field];
+        }
+      });
+
       const params = {
         records: [{
           Id: parseInt(id),
-          Name: updateData.name,
-          Tags: updateData.tags || "",
-          Owner: updateData.owner || null,
-          apiKey: updateData.apiKey || "",
-          projectId: updateData.projectId || "",
-          description: updateData.description || "",
-          websiteURL: updateData.websiteUrl || "",
-          // Ensure exact picklist value match - must be "google.com" or "google.ca"
-          defaultSearchEngine: searchEngine
+          ...filteredData
         }]
       };
-      
-      const response = await apperClient.updateRecord(this.tableName, params);
-      
+
+      // Use retry logic for the update operation
+      const response = await fetchWithRetry(
+        () => apperClient.updateRecord(this.tableName, params),
+        {
+          maxRetries: 3,
+          baseDelay: 1000,
+          maxDelay: 5000,
+          backoffFactor: 2
+        }
+      );
+
+      // Handle response
       if (!response.success) {
         console.error(response.message);
-        throw new Error(response.message);
+        throw new Error(response.message || 'Failed to update brand');
       }
-      
+
       if (response.results) {
-        const failedRecords = response.results.filter(result => !result.success);
+        const successfulUpdates = response.results.filter(result => result.success);
+        const failedUpdates = response.results.filter(result => !result.success);
         
-        if (failedRecords.length > 0) {
-          console.error(`Failed to update ${failedRecords.length} records:${JSON.stringify(failedRecords)}`);
-          throw new Error(failedRecords[0].message || 'Failed to update brand');
+        if (failedUpdates.length > 0) {
+          console.error(`Failed to update brand:${JSON.stringify(failedUpdates)}`);
+          
+          failedUpdates.forEach(record => {
+            if (record.errors) {
+              record.errors.forEach(error => {
+                throw new Error(`${error.fieldLabel}: ${error.message}`);
+              });
+            }
+            if (record.message) throw new Error(record.message);
+          });
         }
-        
-        return response.results[0].data;
+return successfulUpdates.length > 0 ? successfulUpdates[0].data : null;
       }
       
       return response.data;
-} catch (error) {
+    } catch (error) {
       console.error("Error updating brand:", error);
-      
       // Enhanced network error handling for update operations
       if (error.message && (
         error.message.includes('Network Error') || 
         error.message.includes('Failed to fetch') ||
         error.message.includes('net::') ||
         error.message.includes('CONNECTION_ERROR') ||
-        error.message.includes('NETWORK_FAILURE')
+        error.message.includes('NETWORK_FAILURE') ||
+        error.message.includes('ERR_NETWORK') ||
+        error.message.includes('ERR_INTERNET_DISCONNECTED')
       )) {
         throw new Error('Network connection failed while updating brand. Please check your internet connection and try again.');
       } else if (error.message && (
         error.message.includes('timeout') ||
         error.message.includes('TIMEOUT') ||
-        error.message.includes('Request timeout')
+        error.message.includes('Request timeout') ||
+        error.message.includes('ETIMEDOUT')
       )) {
         throw new Error('Request timed out while updating brand. Please check your connection and try again.');
       } else if (error.message && (
         error.message.includes('SDK not loaded') ||
         error.message.includes('ApperSDK') ||
-        error.message.includes('SDK initialization')
+        error.message.includes('SDK initialization') ||
+        error.message.includes('SDK failed to load')
       )) {
         throw new Error('System not ready. Please refresh the page and try again.');
       } else if (error.message && (
@@ -306,8 +329,10 @@ async update(id, updateData) {
         error.message.includes('AbortError')
       )) {
         throw new Error('Update operation was cancelled. Please try again.');
-      } else if (error.name === 'NetworkError' || error.name === 'TypeError') {
+      } else if (error.name === 'NetworkError' || error.name === 'TypeError' || error.code === 'NETWORK_ERROR') {
         throw new Error('Network connection issue detected. Please verify your internet connection and try again.');
+      } else if (error.message && error.message.includes('Max retries exceeded')) {
+        throw new Error('Multiple connection attempts failed. Please check your internet connection and try again.');
       }
       
       throw new Error(error.message || 'Failed to update brand');
