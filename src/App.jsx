@@ -32,12 +32,10 @@ function AppContent() {
   const isAuthenticated = userState?.isAuthenticated || false;
   
   // Initialize ApperUI once when the app loads
-// Consolidated single SDK initialization to prevent client conflicts
-
-    initializeSDK();
-  }, []); // No props and state should be bound
-useEffect(() => {
-const initializeSDK = async () => {
+// Initialize ApperUI once when the app loads  
+  useEffect(() => {
+    // Consolidated single SDK initialization to prevent client conflicts
+    const initializeSDK = async () => {
       try {
         // Wait for SDK to be loaded with enhanced error handling
         await waitForSDK();
