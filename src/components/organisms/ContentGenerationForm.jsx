@@ -123,7 +123,7 @@ const documentData = {
         keywords: formData.keywords,
         status: 'Draft',
         googleDocUrl: `https://docs.google.com/document/d/${Date.now()}/edit`,
-        neuronwriterUrl: "", // Initialize as empty string, will be updated if neuronwriter succeeds
+neuronwriterUrl: null, // Initialize as null, will be updated if neuronwriter succeeds
         companyName: companyName,
         brandId: formData.brandId,
         location: formData.location,
@@ -245,7 +245,7 @@ try {
           documentData.neuronwriterQueryId = queryId;
           documentData.neuronwriterQueryUrl = queryResult.queryUrl;
           // Update the neuronwriterUrl field with the shareUrl for database storage
-          documentData.neuronwriterUrl = queryResult.shareUrl || "";
+documentData.neuronwriterUrl = queryResult.shareUrl || null;
           
           // Update metadata to include Neuronwriter integration details and fetched data
           documentData.metadata = {

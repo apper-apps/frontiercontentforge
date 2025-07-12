@@ -100,7 +100,7 @@ async create(documentData) {
       });
       
       // Prepare neuronwriter URL - use shareUrl if available, otherwise empty string
-      const neuronwriterUrl = documentData.neuronwriterShareUrl || documentData.neuronwriterUrl || "";
+const neuronwriterUrl = documentData.neuronwriterShareUrl || documentData.neuronwriterUrl;
       
       // Only include updateable fields
       const params = {
@@ -168,7 +168,9 @@ async create(documentData) {
           keywords: updateData.keywords,
           status: updateData.status,
           googleDocUrl: updateData.googleDocUrl,
-          neuronwriterUrl: updateData.neuronwriterUrl,
+...(updateData.neuronwriterUrl && updateData.neuronwriterUrl.trim() !== "" && {
+            neuronwriterUrl: updateData.neuronwriterUrl,
+          }),
           analysisId: updateData.analysisId,
           updatedAt: new Date().toISOString(),
           userId: updateData.userId
