@@ -62,7 +62,7 @@ const [formData, setFormData] = useState({
   };
 
 const filteredBrands = brands.filter(brand =>
-    brand?.Name?.toLowerCase().includes(searchTerm.toLowerCase())
+    brand?.Name?.toLowerCase().includes((searchTerm || '').toLowerCase())
   );
 
   const handleCreateBrand = () => {
