@@ -3,15 +3,20 @@ class BrandService {
     this.tableName = 'brand';
   }
 
-  async getAll() {
+async getAll() {
     try {
+      // Check if SDK is available before making API calls
+      if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
+        throw new Error('Apper SDK not loaded. Please refresh the page and try again.');
+      }
+
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-const params = {
+      const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "Tags" } },
@@ -35,19 +40,32 @@ const params = {
       return response.data || [];
     } catch (error) {
       console.error("Error fetching brands:", error);
-      throw new Error('Failed to load brands');
+      
+      // Enhanced network error handling
+      if (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch'))) {
+        throw new Error('Network connection failed. Please check your internet connection and try again.');
+      } else if (error.message && error.message.includes('timeout')) {
+        throw new Error('Request timed out. Please check your connection and try again.');
+      }
+      
+      throw new Error(error.message || 'Failed to load brands');
     }
   }
 
-  async getById(id) {
+async getById(id) {
     try {
+      // Validate connection before API call
+      if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
+        throw new Error('Apper SDK not loaded. Please refresh the page and try again.');
+      }
+
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
-const params = {
+      const params = {
         fields: [
           { field: { Name: "Name" } },
           { field: { Name: "Tags" } },
@@ -71,12 +89,25 @@ const params = {
       return response.data;
     } catch (error) {
       console.error("Error fetching brand:", error);
-      throw new Error('Failed to load brand');
+      
+      // Enhanced network error handling
+      if (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch'))) {
+        throw new Error('Network connection failed. Please check your internet connection and try again.');
+      } else if (error.message && error.message.includes('timeout')) {
+        throw new Error('Request timed out. Please check your connection and try again.');
+      }
+      
+      throw new Error(error.message || 'Failed to load brand');
     }
   }
 
 async create(brandData) {
     try {
+      // Validate SDK availability before creating
+      if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
+        throw new Error('Apper SDK not loaded. Please refresh the page and try again.');
+      }
+
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
@@ -128,12 +159,27 @@ async create(brandData) {
       return response.data;
     } catch (error) {
       console.error("Error creating brand:", error);
-      throw new Error('Failed to create brand');
+      
+      // Enhanced network error detection and messaging
+      if (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch'))) {
+        throw new Error('Network connection failed while creating brand. Please check your internet connection and try again.');
+      } else if (error.message && error.message.includes('timeout')) {
+        throw new Error('Request timed out while creating brand. Please check your connection and try again.');
+      } else if (error.message && error.message.includes('SDK not loaded')) {
+        throw new Error('System not ready. Please refresh the page and try again.');
+      }
+      
+      throw new Error(error.message || 'Failed to create brand');
     }
   }
 
 async update(id, updateData) {
     try {
+      // Validate SDK availability and connectivity before updating
+      if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
+        throw new Error('Apper SDK not loaded. Please refresh the page and try again.');
+      }
+
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
@@ -185,12 +231,29 @@ async update(id, updateData) {
       return response.data;
     } catch (error) {
       console.error("Error updating brand:", error);
-      throw new Error('Failed to update brand');
+      
+      // Comprehensive network error handling for update operations
+      if (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch'))) {
+        throw new Error('Network connection failed while updating brand. Please check your internet connection and try again.');
+      } else if (error.message && error.message.includes('timeout')) {
+        throw new Error('Request timed out while updating brand. Please check your connection and try again.');
+      } else if (error.message && error.message.includes('SDK not loaded')) {
+        throw new Error('System not ready. Please refresh the page and try again.');
+      } else if (error.message && error.message.includes('abort')) {
+        throw new Error('Update operation was cancelled. Please try again.');
+      }
+      
+      throw new Error(error.message || 'Failed to update brand');
     }
   }
 
-  async delete(id) {
+async delete(id) {
     try {
+      // Ensure SDK is ready before attempting deletion
+      if (!window.ApperSDK || !window.ApperSDK.ApperClient) {
+        throw new Error('Apper SDK not loaded. Please refresh the page and try again.');
+      }
+
       const { ApperClient } = window.ApperSDK;
       const apperClient = new ApperClient({
         apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
@@ -220,7 +283,17 @@ async update(id, updateData) {
       return true;
     } catch (error) {
       console.error("Error deleting brand:", error);
-      throw new Error('Failed to delete brand');
+      
+      // Enhanced error handling for delete operations
+      if (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch'))) {
+        throw new Error('Network connection failed while deleting brand. Please check your internet connection and try again.');
+      } else if (error.message && error.message.includes('timeout')) {
+        throw new Error('Request timed out while deleting brand. Please check your connection and try again.');
+      } else if (error.message && error.message.includes('SDK not loaded')) {
+        throw new Error('System not ready. Please refresh the page and try again.');
+      }
+      
+      throw new Error(error.message || 'Failed to delete brand');
     }
   }
 }
