@@ -229,18 +229,38 @@ async update(id, updateData) {
       }
       
       return response.data;
-    } catch (error) {
+} catch (error) {
       console.error("Error updating brand:", error);
       
-      // Comprehensive network error handling for update operations
-      if (error.message && (error.message.includes('Network Error') || error.message.includes('Failed to fetch'))) {
+      // Enhanced network error handling for update operations
+      if (error.message && (
+        error.message.includes('Network Error') || 
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('net::') ||
+        error.message.includes('CONNECTION_ERROR') ||
+        error.message.includes('NETWORK_FAILURE')
+      )) {
         throw new Error('Network connection failed while updating brand. Please check your internet connection and try again.');
-      } else if (error.message && error.message.includes('timeout')) {
+      } else if (error.message && (
+        error.message.includes('timeout') ||
+        error.message.includes('TIMEOUT') ||
+        error.message.includes('Request timeout')
+      )) {
         throw new Error('Request timed out while updating brand. Please check your connection and try again.');
-      } else if (error.message && error.message.includes('SDK not loaded')) {
+      } else if (error.message && (
+        error.message.includes('SDK not loaded') ||
+        error.message.includes('ApperSDK') ||
+        error.message.includes('SDK initialization')
+      )) {
         throw new Error('System not ready. Please refresh the page and try again.');
-      } else if (error.message && error.message.includes('abort')) {
+      } else if (error.message && (
+        error.message.includes('abort') ||
+        error.message.includes('cancelled') ||
+        error.message.includes('AbortError')
+      )) {
         throw new Error('Update operation was cancelled. Please try again.');
+      } else if (error.name === 'NetworkError' || error.name === 'TypeError') {
+        throw new Error('Network connection issue detected. Please verify your internet connection and try again.');
       }
       
       throw new Error(error.message || 'Failed to update brand');
