@@ -36,7 +36,7 @@ const ContentModal = ({ isOpen, onClose, document }) => {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="relative bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
           >
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+<div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{document.title}</h2>
                 <p className="text-sm text-gray-600 mt-1">
@@ -51,8 +51,67 @@ const ContentModal = ({ isOpen, onClose, document }) => {
                 className="flex-shrink-0"
               />
             </div>
+
+            {/* NeuronWriter Information Section */}
+            {(document.neuronwriterUrl || document.neuronwriterquerylink || document.neuronwriterscore || document.keyworddensity || document.readabilityscore) && (
+              <div className="mx-6 mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ApperIcon name="BarChart3" size={20} className="text-purple-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">NeuronWriter Analysis</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {document.neuronwriterUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        icon="ExternalLink"
+                        onClick={() => window.open(document.neuronwriterUrl, '_blank')}
+                        className="text-xs"
+                      >
+                        View Analysis
+                      </Button>
+                    )}
+                    {document.neuronwriterquerylink && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        icon="Search"
+                        onClick={() => window.open(document.neuronwriterquerylink, '_blank')}
+                        className="text-xs"
+                      >
+                        View Query
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {(document.neuronwriterscore || document.keyworddensity || document.readabilityscore) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {document.neuronwriterscore && (
+                      <div className="bg-white p-3 rounded-md shadow-sm">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">NeuronWriter Score</div>
+                        <div className="text-2xl font-bold text-purple-600">{document.neuronwriterscore}%</div>
+                      </div>
+                    )}
+                    {document.keyworddensity && (
+                      <div className="bg-white p-3 rounded-md shadow-sm">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">Keyword Density</div>
+                        <div className="text-2xl font-bold text-blue-600">{document.keyworddensity}%</div>
+                      </div>
+                    )}
+                    {document.readabilityscore && (
+                      <div className="bg-white p-3 rounded-md shadow-sm">
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">Readability Score</div>
+                        <div className="text-2xl font-bold text-green-600">{document.readabilityscore}%</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             
-            <div className="p-6 overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+            <div className="p-6 overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(90vh - 200px)' }}>
               <div 
                 className="markdown-content"
                 dangerouslySetInnerHTML={renderContent()}
@@ -69,16 +128,6 @@ const ContentModal = ({ isOpen, onClose, document }) => {
                     onClick={() => window.open(document.googleDocUrl, '_blank')}
                   >
                     Open in Google Docs
-                  </Button>
-                )}
-                {document.neuronwriterUrl && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    icon="BarChart3"
-                    onClick={() => window.open(document.neuronwriterUrl, '_blank')}
-                  >
-                    View SEO Analysis
                   </Button>
                 )}
               </div>
