@@ -114,6 +114,53 @@ async create(brandData) {
         apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
       });
       
+      // Check for duplicate website domain before creating
+      if (brandData.websiteUrl && brandData.websiteUrl.trim()) {
+        // Extract domain from website URL for comparison
+        const extractDomain = (url) => {
+          try {
+            // Normalize URL by adding protocol if missing
+            let normalizedUrl = url.trim();
+            if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+              normalizedUrl = 'https://' + normalizedUrl;
+            }
+            
+            const urlObj = new URL(normalizedUrl);
+            return urlObj.hostname.toLowerCase().replace(/^www\./, '');
+          } catch (error) {
+            // If URL parsing fails, use the original string for comparison
+            return url.toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '').replace(/\/$/, '');
+          }
+        };
+        
+        const inputDomain = extractDomain(brandData.websiteUrl);
+        
+        // Query existing brands to check for duplicates
+        const duplicateCheckParams = {
+          fields: [
+            { field: { Name: "Name" } },
+            { field: { Name: "websiteURL" } }
+          ]
+        };
+        
+        const existingBrandsResponse = await apperClient.fetchRecords(this.tableName, duplicateCheckParams);
+        
+        if (existingBrandsResponse.success && existingBrandsResponse.data) {
+          // Check if any existing brand has the same domain
+          const duplicateBrand = existingBrandsResponse.data.find(brand => {
+            if (brand.websiteURL && brand.websiteURL.trim()) {
+              const existingDomain = extractDomain(brand.websiteURL);
+              return existingDomain === inputDomain;
+            }
+            return false;
+          });
+          
+          if (duplicateBrand) {
+            throw new Error(`A brand with this website domain already exists: ${duplicateBrand.Name}`);
+          }
+        }
+      }
+      
       // Validate and ensure exact picklist value match
       const validSearchEngines = ["google.com", "google.ca"];
       let searchEngine = "google.com"; // Default value
